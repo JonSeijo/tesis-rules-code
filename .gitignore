@@ -1,3 +1,10 @@
+# Output
+output/
+
+# Repos
+tesis-jmenriquez-code/
+maximal-repeats-transactions/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
