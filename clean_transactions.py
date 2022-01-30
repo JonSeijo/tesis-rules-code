@@ -8,6 +8,8 @@ import pathlib
 import sys
 import os
 
+from multiprocessing import Pool
+
 PATH_JM_CODE = "tesis-jmenriquez-code/"
 PATH_DEFAULT_TXS = "output/transactions/"
 PATH_DEFAULT_CLEAN_TXS = "output/clean_transactions/"
@@ -52,9 +54,13 @@ parser.add_argument('--output_dir',
 
 parser.add_argument('--mode',
     type=str,
-    choices=['substring', 'superstring', '0', '1'],
-    help=' substring or superstring mode for cleaning. default=substring',
-    default='substring')
+    choices=['substring', 'superstring'],
+    help=' substring or superstring mode for cleaning')
+
+parser.add_argument('--threads',
+    type=int,
+    help=' amount of subprocesses for paralelization',
+    default=1)
 
 
 parser.add_argument('-no_confirmation', action='store_true', help=' flag for continuing without confirmation')
@@ -70,18 +76,21 @@ path_output_dir = str(args.output_dir)
 
 ask_confirmation = not args.no_confirmation
 
+num_threads = args.threads
+
 txs_names = args.txs
 
 validate_txs_names(path_input_dir, txs_names)
 
 
 executable = f"./{PATH_JM_CODE}cleaner"
+str_mode = args.mode[:3]  # sub/sup
 clean_mode = 0 if args.mode in ["substring", "0"] else 1
 
 print("---------------------------------")
 print("Running tx-cleaner with params:")
 print("  executable:   ", executable)
-print("  clean_mode:   ", clean_mode)
+print("  clean_mode:   ", (str_mode, clean_mode))
 print("  input_dir:    ", path_input_dir)
 print("  output_dir:   ", path_output_dir)
 print("  txs_names:    ", txs_names)
@@ -100,10 +109,10 @@ print("Running tx-cleaner makefile in:", PATH_JM_CODE)
 subprocess.run(["make", "cleaner"], cwd=PATH_JM_CODE)
 print()
 
-# No las ejecuto en paralelo dado que consumen bastante memoria
-for tx_name in txs_names:
+
+def execute_subprocess(tx_name):
     input_file = path_input_dir + "/" + tx_name + ".csv"
-    output_file = path_output_dir + "/" + tx_name + ".csv"
+    output_file = path_output_dir + "/" + tx_name + "_" + str_mode + ".csv"
     # ------------------------------------------------
 
     # Clean transactions
@@ -113,9 +122,14 @@ for tx_name in txs_names:
     #   cleaned_0_transactions.csv
     print(f"----------------")
     print(f"Running tx-cleaner for {tx_name}")
-    start_txgen = time.time()
     subprocess.run(map_str([executable, input_file, clean_mode, output_file]))
-    end_txgen = time.time()
 
-    print()
-    print("time: ", str(timedelta(seconds=end_txgen-start_txgen)))
+
+start_txgen = time.time()
+
+with Pool(num_threads) as p:
+    p.map(execute_subprocess, txs_names)
+
+end_txgen = time.time()
+print()
+print(f"time for cleaning all txs:", str(timedelta(seconds=end_txgen-start_txgen)))
