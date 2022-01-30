@@ -100,6 +100,7 @@ print("Running makefile in:", DIR_MAXIMAL_REPEATS_GENERATOR)
 subprocess.run(["make"], cwd=DIR_MAXIMAL_REPEATS_GENERATOR)
 
 # Generate transactions
+print("Running tx-generator...")
 start_txgen = time.time()
 subprocess.run(map_str([executable, family, input_dir, output_prefix, min_len, max_len, min_proteins]))
 end_txgen = time.time()

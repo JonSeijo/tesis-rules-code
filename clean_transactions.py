@@ -1,0 +1,121 @@
+# python3
+
+import argparse
+import subprocess
+import time
+from datetime import timedelta
+import pathlib
+import sys
+import os
+
+PATH_JM_CODE = "tesis-jmenriquez-code/"
+PATH_DEFAULT_TXS = "output/transactions/"
+PATH_DEFAULT_CLEAN_TXS = "output/clean_transactions/"
+
+def map_str(ls):
+    return list(map(str, ls))
+
+def show_posible_txs():
+    print("-----------")
+    print("Transactions in default location: ")
+    txs_names = sorted([ fname for fname in os.listdir(PATH_DEFAULT_TXS)])
+    for tx in txs_names:
+        print(tx[:-4])
+    print("-----------")
+
+def validate_txs_names(path_input_dir, txs_names):
+    output_dir_contents = os.listdir(path_input_dir)
+    for tx_name in txs_names:
+        if tx_name + ".csv" not in output_dir_contents:
+            raise Exception(f"Cannot find '{tx_name}.csv' in path '{path_input_dir}'")
+
+
+parser = argparse.ArgumentParser(description='Run tx-cleaner')
+
+parser.add_argument('-txs',
+    type=str,
+    nargs='+', # 1 or more
+    required=True,
+    help='names of the transaction csv to clean')
+
+parser.add_argument('--input_dir',
+    type=pathlib.Path,
+    action='store',
+    help='relative path to input transactions directory',
+    default=PATH_DEFAULT_TXS)
+
+parser.add_argument('--output_dir',
+    type=pathlib.Path,
+    action='store',
+    help='relative path to output clean transactions directory',
+    default=PATH_DEFAULT_CLEAN_TXS)
+
+parser.add_argument('--mode',
+    type=str,
+    choices=['substring', 'superstring', '0', '1'],
+    help=' substring or superstring mode for cleaning. default=substring',
+    default='substring')
+
+
+parser.add_argument('-no_confirmation', action='store_true', help=' flag for continuing without confirmation')
+
+# ------------------------------------------------
+
+show_posible_txs()
+
+args = parser.parse_args()
+
+path_input_dir = str(args.input_dir)
+path_output_dir = str(args.output_dir)
+
+ask_confirmation = not args.no_confirmation
+
+txs_names = args.txs
+
+validate_txs_names(path_input_dir, txs_names)
+
+
+executable = f"./{PATH_JM_CODE}cleaner"
+clean_mode = 0 if args.mode in ["substring", "0"] else 1
+
+print("---------------------------------")
+print("Running tx-cleaner with params:")
+print("  executable:   ", executable)
+print("  clean_mode:   ", clean_mode)
+print("  input_dir:    ", path_input_dir)
+print("  output_dir:   ", path_output_dir)
+print("  txs_names:    ", txs_names)
+print("                ")
+
+# Ask for confirmation
+if ask_confirmation:
+    answer = input("-----\nContinue? YES/NO: ")
+    if answer.upper() not in ["Y", "YE", "YES"]:
+        sys.exit()
+    print("\n\n\n")
+
+
+# Makefile
+print("Running tx-cleaner makefile in:", PATH_JM_CODE)
+subprocess.run(["make", "cleaner"], cwd=PATH_JM_CODE)
+print()
+
+# No las ejecuto en paralelo dado que consumen bastante memoria
+for tx_name in txs_names:
+    input_file = path_input_dir + "/" + tx_name + ".csv"
+    output_file = path_output_dir + "/" + tx_name + ".csv"
+    # ------------------------------------------------
+
+    # Clean transactions
+    # ./tesis-jmenriquez-code/cleaner 
+    #   maximal-repeats-transactions/output/transactions.csv 
+    #   0 
+    #   cleaned_0_transactions.csv
+    print(f"----------------")
+    print(f"Running tx-cleaner for {tx_name}")
+    start_txgen = time.time()
+    subprocess.run(map_str([executable, input_file, clean_mode, output_file]))
+    end_txgen = time.time()
+
+    print()
+    print("time: ", str(timedelta(seconds=end_txgen-start_txgen)))
