@@ -5,6 +5,9 @@ output/
 tesis-jmenriquez-code/
 maximal-repeats-transactions/
 
+# venv
+venv-tesis/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
