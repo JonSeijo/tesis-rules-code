@@ -22,3 +22,12 @@
 
 - Comparar reglas: `compare_rules.py`
 
+- Generacion de logos:
+  : run_parse_app
+  : logo_maker.py
+
+- Analisis de logos
+```python3 logo_analysis.py -sto_path tesis-jmenriquez-code/out_parse_rules_jonno_NEWAnk/ -sto GADV LHLA LISH TPLH > output/logos/logo_analysis_jonno_NEWAnk.txt```
+
+```python3 logo_analysis.py -sto_path tesis-jmenriquez-code/out_parse_rules_jm_ank -sto GADV LHLA LISH TPLH > output/logos/logo_analysis_jm_ank.txt```
+
