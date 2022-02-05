@@ -46,7 +46,9 @@ rules_b = rule_list(df_b)
 # print(len(rules_b))
 # print(rules_b)
 intersection = [ rule for rule in rules_b if rule in rules_a ]
-not_rules_b = [ rule for rule in rules_b if rule not in rules_a ]
+rules_in_b_not_in_a = [ rule for rule in rules_b if rule not in rules_a ]
+rules_in_a_not_in_b = [ rule for rule in rules_a if rule not in rules_b ]
+
 
 print()
 print()
@@ -58,10 +60,24 @@ print("#rules_a:", len(rules_a))
 print("#rules_b:", len(rules_b))
 print()
 print("#intersection:", len(intersection))
-print("#not_rules_b:", len(not_rules_b))
+print("#rules_in_b_not_in_a:", len(rules_in_b_not_in_a))
+print("#rules_in_a_not_in_b:", len(rules_in_a_not_in_b))
 print()
 print()
 
-# for l,r in not_rules_b:
+# for l,r in rules_in_a_not_in_b:
 # 	print(f"{l} -> {r}")
 
+
+# Pequeña exploracion:
+# for l, r in rules_a:
+# 	mayor_4 = False
+# 	for x in l:
+# 		if len(x) >	 4:
+# 			mayor_4 = True
+# 	for x in r:
+# 		if len(x) > 4:
+# 			mayor_4 = True
+
+# 	if mayor_4:
+# 		print(f"{l} -> {r}")
