@@ -1,0 +1,1 @@
+/home/connor/Escritorio/tesis/src/parse/rulegroup/tests/cov1.fasta

@@ -1,0 +1,7 @@
+{JLT,AAB} => {AAA}
+{AAA,AAB} => {CAB}
+{JLE,CAB} => {HBV}
+{AAB,HBV} => {JME}
+{HCV,CAB} => {JLE}
+{LBV,JMT} => {HAV}
+{JME,CAB} => {LBV}

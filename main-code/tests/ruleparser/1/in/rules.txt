@@ -1,0 +1,5 @@
+{RAG,QDD} => {EVR}
+{AA,MN,DH,LE}=>{VAM}
+{IIEVL,LKYA}=>{KYGAD}
+{GKK}=>{TPL}
+{AA,MN}=>{VAM}

@@ -1,0 +1,49 @@
+Calculating item distances with clusterized rules
+Matches: ['AAB', 'AAA', 'JLT']
+JLTAABXXXAAAXXXXXXXXAAAXXXXXXXXXXXXAAAXXXXXXXXXXXXAAB
+['JME|JMT|JLE|JLT', 'CAB|AAB|AAA']
+CAB|AAB|AAA
+{'HBV': 0, 'CAB': 0, 'LBV': 0, 'AAA': 0, 'HAV': 0, 'JLT': 1, 'JME': 0, 'JMT': 0, 'JLE': 0, 'HCV': 0, 'AAB': 1}
+---------------------
+Matches: ['AAB', 'AAA']
+JLTAABXXXAAAXXXXXXXXAAAXXXXXXXXXXXXAAAXXXXXXXXXXXXAAB
+['CAB|AAB|AAA', 'CAB|AAB|AAA']
+CAB|AAB|AAA
+{'HBV': 0, 'CAB': 0, 'LBV': 0, 'AAA': 0, 'HAV': 0, 'JLT': 1, 'JME': 0, 'JMT': 0, 'JLE': 0, 'HCV': 0, 'AAB': 2}
+---------------------
+Matches: ['AAA', 'JME']
+JMEAAAXXHCVXXXXXXXXXHAV
+['JME|JMT|JLE|JLT', 'CAB|AAB|AAA']
+CAB|AAB|AAA
+{'HBV': 0, 'CAB': 0, 'LBV': 0, 'AAA': 0, 'HAV': 0, 'JLT': 1, 'JME': 1, 'JMT': 0, 'JLE': 0, 'HCV': 0, 'AAB': 2}
+---------------------
+Matches: ['AAA']
+JMEAAAXXHCVXXXXXXXXXHAV
+['CAB|AAB|AAA', 'CAB|AAB|AAA']
+CAB|AAB|AAA
+{'HBV': 0, 'CAB': 0, 'LBV': 0, 'AAA': 0, 'HAV': 0, 'JLT': 1, 'JME': 1, 'JMT': 0, 'JLE': 0, 'HCV': 0, 'AAB': 2}
+---------------------
+Matches: ['HAV', 'HCV', 'JME', 'AAA']
+JMEAAAXXHCVXXXXXXXXXHAV
+['JME|JMT|JLE|JLT', 'CAB|AAB|AAA']
+HBV|LBV|HCV|HAV
+{'HBV': 0, 'CAB': 0, 'LBV': 0, 'AAA': 0, 'HAV': 1, 'JLT': 1, 'JME': 2, 'JMT': 0, 'JLE': 0, 'HCV': 1, 'AAB': 2}
+---------------------
+Matches: ['JME', 'AAA', 'HAV', 'HCV']
+JMEAAAXXHCVXXXXXXXXXHAV
+['CAB|AAB|AAA', 'HBV|LBV|HCV|HAV']
+JME|JMT|JLE|JLT
+{'HBV': 0, 'CAB': 0, 'LBV': 0, 'AAA': 0, 'HAV': 2, 'JLT': 1, 'JME': 3, 'JMT': 0, 'JLE': 0, 'HCV': 2, 'AAB': 2}
+---------------------
+Matches: ['JME', 'HAV', 'HCV', 'AAA']
+JMEAAAXXHCVXXXXXXXXXHAV
+['HBV|LBV|HCV|HAV', 'CAB|AAB|AAA']
+JME|JMT|JLE|JLT
+{'HBV': 0, 'CAB': 0, 'LBV': 0, 'AAA': 0, 'HAV': 3, 'JLT': 1, 'JME': 4, 'JMT': 0, 'JLE': 0, 'HCV': 3, 'AAB': 2}
+---------------------
+Matches: ['HAV', 'HCV', 'JME', 'AAA']
+JMEAAAXXHCVXXXXXXXXXHAV
+['JME|JMT|JLE|JLT', 'CAB|AAB|AAA']
+HBV|LBV|HCV|HAV
+{'HBV': 0, 'CAB': 0, 'LBV': 0, 'AAA': 0, 'HAV': 4, 'JLT': 1, 'JME': 5, 'JMT': 0, 'JLE': 0, 'HCV': 4, 'AAB': 2}
+---------------------

@@ -1,0 +1,5 @@
+AAA    11    Isolated   3
+AAA    15    Isolated   3
+HBV    10    Isolated   2
+HBV    11    Isolated   4
+LBV    11    Isolated   4

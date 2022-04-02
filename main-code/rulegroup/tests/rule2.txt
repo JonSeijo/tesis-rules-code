@@ -1,0 +1,6 @@
+{GWTA,TALH} => {WTAL}
+{EHGA,LEHG} => {LLEH}
+{ERGA,LERG} => {LLER}
+{LLEA,LLK} => {GAVN}
+{HL} => {LEI}
+{GAVN} => {TPLH}
