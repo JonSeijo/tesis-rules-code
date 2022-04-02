@@ -1,5 +1,16 @@
 # tesis-code
 
+# Estructura
+
+ #TODO: repensar y reorganizar codigo existente
+
+- `maximal-repeats-transactions/`: repositorio para generar transacciones de maximal repeats a partir de una familia de proteinas. 
+
+- `main-code`: generador de reglas, analisis posteriores y generador de db para el visualizador. #TODO: subdivisiones
+
+- `protein-visualization`: docker y la aplicacion visualizadora en si.
+
+
 # Setup
 
 ### R
