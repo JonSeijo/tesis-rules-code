@@ -30,6 +30,8 @@ TxmbaCleaner::TxmbaCleaner(string inputFile, bool inclusionMode, string outputFi
  */
 void TxmbaCleaner::cleanLines()
 {
+    int txsCleaned = 0;
+
     std::ifstream infile(this->inputFilename.c_str(), std::ifstream::in);
     std::string line;
 
@@ -40,6 +42,10 @@ void TxmbaCleaner::cleanLines()
 
     if(length > 0) {
         while (std::getline(infile, line)) {
+            txsCleaned++;
+            if (txsCleaned % 1000 == 0) {
+                std::cout << "Transactions cleaned: " << txsCleaned << std::endl;
+            }
             std::istringstream iss(line);
             string currentLine = iss.str();
             string cleaned;

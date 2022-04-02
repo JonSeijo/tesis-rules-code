@@ -11,8 +11,60 @@ from pathlib import Path
 from fastaread import Protein,FastaParser
 from rulegroup import RuleGroupParser,Rule
 from rulecoverage import RuleCoverage
-from rule_stats import RuleStats
+from rule_stats_multithread import RuleStats
 import sqlite3
+
+from pathos.multiprocessing import ProcessingPool as Pool
+# from multiprocessing import Pool
+
+
+def insert_coverage_info_of_proteins(process_num, proteins, rules, dbfilename):
+# def insert_coverage_info_of_proteins(parameters_list):
+    # process_num, proteins, rules, dbfilename = parameters_list
+
+    rs = RuleStats(dbfilename)
+    cov = RuleCoverage("","","test.txt","vector")
+
+    protein_amount = len(proteins)
+    protein_count = 0
+
+    toinsert_values = []
+
+    for idProtein, protein in proteins:
+        protein_count += 1
+        if protein_count % 10 == 0:
+            print(f"P{process_num} - {protein_count} / {protein_amount}")
+
+        for idRule, rule in rules.items():
+            coverageResult = cov.getCoverageOfRuleForProtein(protein, rule) #Single protein vs single rule
+            fraction = coverageResult.getCoverageFraction()
+            mode = coverageResult.getCoverageMode()
+
+            if coverageResult.isProteinCovered(): #Stricter version!
+                proteinStr = protein.getEncoding()
+                ocurrenceType = rs.ocurrenceType(rule, proteinStr)
+                antecedentRepeats = []
+                antecedentRepeatsDistances = []
+                antecedentAvgRepeatDistances = []
+                consequentRepeats = rs.getOcurrencesIndexes(rule.consequent, proteinStr)
+                consequentRepeatsDistances = rs.distanceBetweenConsecutiveRepeats(rule.consequent, proteinStr)
+                
+                consequentAvgRepeatDistance = rs.averageOcurrence(consequentRepeatsDistances)
+
+                for ant in rule.antecedent:
+                    antecedentRepeats.append(rs.getOcurrencesIndexes(ant, proteinStr))
+                    ocurrs = rs.distanceBetweenConsecutiveRepeats(ant, proteinStr)
+                    antecedentRepeatsDistances.append(ocurrs)
+                    antecedentAvgRepeatDistances.append(rs.averageOcurrence(ocurrs))
+
+                toInsert = (idRule, idProtein, fraction, mode, ocurrenceType, str(antecedentRepeats), str(consequentRepeats), str(consequentRepeatsDistances), consequentAvgRepeatDistance, str(antecedentRepeatsDistances), str(antecedentAvgRepeatDistances))
+                toinsert_values.append(toInsert)
+                # cursor.execute('''INSERT INTO rule_coverage(idRule, idProtein, fraction, coverageMode, consequentOcurrenceType, antecedentRepeats,
+                #     consequentRepeats, consequentRepeatsDistances, consequentAvgRepeatDistance, antecedentRepeatsDistances, antecedentAvgRepeatDistances)
+                #     VALUES (?,?,?,?,?,?,?,?,?,?,?)''', toInsert)
+
+    return toinsert_values
+
 
 class GenerateProteinRuleDb(object):
     """docstring for GenerateProteinRuleDb"""
@@ -24,21 +76,21 @@ class GenerateProteinRuleDb(object):
 
     def createDB(self, proteinPath, ruleFile):
         """ Create a DB from scratch """
-        self.connection = self.createFile()
+        # self.connection = self.createFile()
         self.insertProteins(proteinPath)
         self.insertRules(ruleFile)
         self.insertCoverageInfo(self.proteins, self.rules)
         self.insertItemInfo()
-        self.connection.close()
+        # self.connection.close()
 
     def addProteins(self, proteinPath):
         """ Add proteins from proteinPath to the database specified """
-        self.connection = sqlite3.connect(self.filename)
+        # self.connection = sqlite3.connect(self.filename)
         self.insertProteins(proteinPath, True)
         self.readRulesFromDB()
         self.insertCoverageInfo(self.proteins, self.rules)
         self.insertItemInfo()
-        self.connection.close()        
+        # self.connection.close()        
 
     def createFile(self):
         """ Creates a new sqlite file for the database """
@@ -46,7 +98,8 @@ class GenerateProteinRuleDb(object):
 
     def insertProteins(self, proteinPath, update=False):
         """ Insert the proteins into the DB """
-        cursor = self.connection.cursor()
+        connection = self.createFile()
+        cursor = connection.cursor()
 
         # Create table
         cursor.execute('''CREATE TABLE IF NOT EXISTS protein
@@ -74,12 +127,14 @@ class GenerateProteinRuleDb(object):
             cursor.executemany('INSERT INTO protein(idProtein, encoding, filename) VALUES (?,?,?)', toInsert)
 
 
-        self.connection.commit()
+        connection.commit()
+        connection.close()
     
 
     def insertRules(self, ruleFile):
         """ Insert the rules into the DB """
-        cursor = self.connection.cursor()
+        connection = self.createFile()
+        cursor = connection.cursor()
 
         # Create table
         cursor.execute('''CREATE TABLE IF NOT EXISTS rule
@@ -96,14 +151,15 @@ class GenerateProteinRuleDb(object):
                 cursor.execute('INSERT INTO rule(idRule, rule, antecedent, consequent, ruleType) VALUES (?,?,?,?,?)', toInsert)
                 index += 1
 
-        self.connection.commit()
+        connection.commit()
+        connection.close()
+
 
 
     def insertCoverageInfo(self, proteins, rules):
         """ Insert the coverage info for the proteins/rules. Proteins is a dict or Protein and rules is a dict of Rule """
-        cov = RuleCoverage("","","test.txt","vector")
-        cursor = self.connection.cursor()
-        rs = RuleStats(self.filename)
+        connection = self.createFile()
+        cursor = connection.cursor()
 
         # Create table
         cursor.execute('''CREATE TABLE IF NOT EXISTS rule_coverage
@@ -113,46 +169,45 @@ class GenerateProteinRuleDb(object):
         protein_count = 0
         protein_amount = len(proteins.items())
 
+        connection.commit()
+        connection.close()
+
         print("Inserting coverage info...")
+
+        # TODO: Buscar una mejor forma de dividir el diccionario "proteins"
+        # Aca divido el diccionario en N listas de tuplas para apliar paralelismo
+        curr_bucket = 0
+        num_buckets = 7 # Amount of processes
+        proteins_items_list = [[] for _ in range(num_buckets)]
+
         for idProtein, protein in proteins.items():
-            protein_count += 1
-            if protein_count % 100 == 0:
-                print(f"{protein_count} / {protein_amount}")
+            proteins_items_list[curr_bucket].append((idProtein, protein))
+            curr_bucket = (curr_bucket + 1) % num_buckets
 
-            for idRule, rule in rules.items():
-                coverageResult = cov.getCoverageOfRuleForProtein(protein, rule) #Single protein vs single rule
-                fraction = coverageResult.getCoverageFraction()
-                mode = coverageResult.getCoverageMode()
+        rules_and_proteins_items_list = [ [process_num, protein_list, rules, self.filename] for process_num, protein_list in enumerate(proteins_items_list) ]
 
-                if coverageResult.isProteinCovered(): #Stricter version!
-                    proteinStr = protein.getEncoding()
-                    ocurrenceType = rs.ocurrenceType(rule, proteinStr)
-                    antecedentRepeats = []
-                    antecedentRepeatsDistances = []
-                    antecedentAvgRepeatDistances = []
-                    consequentRepeats = rs.getOcurrencesIndexes(rule.consequent, proteinStr)
-                    consequentRepeatsDistances = rs.distanceBetweenConsecutiveRepeats(rule.consequent, proteinStr)
-                    
-                    consequentAvgRepeatDistance = rs.averageOcurrence(consequentRepeatsDistances)
+        with Pool(processes=num_buckets) as pool:
+            insert_values_proceses = pool.map(lambda ps: insert_coverage_info_of_proteins(*ps), rules_and_proteins_items_list)
 
-                    for ant in rule.antecedent:
-                        antecedentRepeats.append(rs.getOcurrencesIndexes(ant, proteinStr))
-                        ocurrs = rs.distanceBetweenConsecutiveRepeats(ant, proteinStr)
-                        antecedentRepeatsDistances.append(ocurrs)
-                        antecedentAvgRepeatDistances.append(rs.averageOcurrence(ocurrs))
+        connection = self.createFile()
+        cursor = connection.cursor()
 
-                    toInsert = (idRule, idProtein, fraction, mode, ocurrenceType, str(antecedentRepeats), str(consequentRepeats), str(consequentRepeatsDistances), consequentAvgRepeatDistance, str(antecedentRepeatsDistances), str(antecedentAvgRepeatDistances))
-                    cursor.execute('''INSERT INTO rule_coverage(idRule, idProtein, fraction, coverageMode, consequentOcurrenceType, antecedentRepeats,
-                        consequentRepeats, consequentRepeatsDistances, consequentAvgRepeatDistance, antecedentRepeatsDistances, antecedentAvgRepeatDistances)
-                        VALUES (?,?,?,?,?,?,?,?,?,?,?)''', toInsert)
+        for insert_values in insert_values_proceses:
+            for toinsert in insert_values:
+                cursor.execute('''INSERT INTO rule_coverage(idRule, idProtein, fraction, coverageMode, consequentOcurrenceType, antecedentRepeats,
+                    consequentRepeats, consequentRepeatsDistances, consequentAvgRepeatDistance, antecedentRepeatsDistances, antecedentAvgRepeatDistances)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?)''', toinsert)
 
-        self.connection.commit()
+        connection.commit()
+        connection.close()
+
 
     def insertItemInfo(self):
         """ Add item data to the item table stats """
         print("Inserting item info...")
         rs = RuleStats(self.filename)
-        cursor = self.connection.cursor()
+        connection = self.createFile()
+        cursor = connection.cursor()
 
         # Create table
         cursor.execute('''CREATE TABLE IF NOT EXISTS item
@@ -209,19 +264,24 @@ class GenerateProteinRuleDb(object):
             idItem = idItem + 1
             cursor.execute(stmt, values)
 
-        self.connection.commit()
+        connection.commit()
+        connection.close()
 
 
     def getRuleCoverageIterator(self):
         """ Returns an iterable to the rule coverage table joined with the relevant fields in order to query the stat for rules/items """
-        return self.connection.cursor().execute('''SELECT rc.idRule, rc.idProtein, p.encoding as protein, r.rule as rule FROM rule_coverage rc
+        connection = self.createFile()
+        res = connection.cursor().execute('''SELECT rc.idRule, rc.idProtein, p.encoding as protein, r.rule as rule FROM rule_coverage rc
             INNER JOIN protein p on p.idProtein = rc.idProtein
             INNER JOIN rule r on r.idRule = rc.idRule
             ''')
+        # connection.close()
+        return res
 
     def addStatsToRuleCoverage(self):
         """ Adds stats to the coverage database """
-        updateCursor = self.connection.cursor()
+        connection = self.createFile()
+        updateCursor = connection.cursor()
         for row in self.getRuleCoverageIterator():
 
             idRule = row[0]
@@ -262,18 +322,22 @@ class GenerateProteinRuleDb(object):
             values = (ocurrenceType, str(antecedentRepeats), str(consequentRepeats), str(consequentRepeatsDistances), consequentAvgRepeatDistance, str(antecedentRepeatsDistances), str(antecedentAvgRepeatDistances), idRule, idProtein)
             updateCursor.execute(modifyStmt, values)
 
-        self.connection.commit()
+        connection.commit()
+        connection.close()
 
 
     def readRulesFromDB(self):
         """ Read the rules into the DB """
         print("Loading rules from DB...")
-        cursor = self.connection.cursor()
+        connection = self.createFile()
+        cursor = connection.cursor()
 
         #Read the rules from the DB.
         for row in cursor.execute('''SELECT * FROM rule'''):
             rule = Rule(row[1])                
             self.rules[row[0]] = rule
+
+        connection.close()
             
 def parameterNotSet(param):
     """ Returns whether the parameter param is set """

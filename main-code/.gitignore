@@ -1,3 +1,17 @@
+tmp
+rulegroup/__pycache__
+
+# output_files
+out_parse_rules_*
+
+# Executables
+cleaner
+rule_parse_app
+
+# Virtual enviroments
+venv-tesis-jm
+
+
 # Prerequisites
 *.d
 

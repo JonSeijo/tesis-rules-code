@@ -16,3 +16,15 @@ Modo 0 es modo substring
 make cleaner
 time ./tesis-jmenriquez-code/cleaner maximal-repeats-transactions/output/transactions.csv 0 cleaned_0_transactions.csv
 ```
+
+
+
+# Generador de db
+
+```bash
+time python3 rulegroup/rule_db_generator_multithread.py --proteinPath=../../db/canonicalFamilyDataset/familyDataset/ank/ --ruleFile=../output/simplified_rules/ank_len4_ALL_sub_s0.025_c0.9..txt 
+```
+
+```bash
+time python3 rulegroup/rule_db_generator_multithread.py --proteinPath=../../db/canonicalFamilyDataset/familyDataset/NEWAnk/ --ruleFile=../output/simplified_rules/NEWAnk_len4_ALL_sub_s0.02_c0.9..txt 
+```

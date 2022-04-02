@@ -1,6 +1,6 @@
 .PHONY= clean clean_all build
 CXX=g++
-CXXFLAGS=-Wall -std=c++11		## flags del compilador: Wall para "warnings all"
+CXXFLAGS=-O2 -Wall -std=c++11		## flags del compilador: Wall para "warnings all"
 OBJ=parse.o
 LIBSCPPUNIT = -lcppunit -I .
 TESTEXEC=parse_test mrs_test txmba_test
