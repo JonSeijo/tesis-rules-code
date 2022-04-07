@@ -1,4 +1,7 @@
 # python3
+"""
+Script para encapsular el transaction_cleaner de JM
+"""
 
 import argparse
 import subprocess
@@ -10,7 +13,7 @@ import os
 
 from multiprocessing import Pool
 
-PATH_JM_CODE = "tesis-jmenriquez-code/"
+PATH_JM_CODE = "main-code/"
 PATH_DEFAULT_TXS = "output/transactions/"
 PATH_DEFAULT_CLEAN_TXS = "output/clean_transactions/"
 
@@ -43,13 +46,13 @@ parser.add_argument('-txs',
 parser.add_argument('--input_dir',
     type=pathlib.Path,
     action='store',
-    help='relative path to input transactions directory',
+    help=f'relative path to input transactions directory. Default: {PATH_DEFAULT_TXS}',
     default=PATH_DEFAULT_TXS)
 
 parser.add_argument('--output_dir',
     type=pathlib.Path,
     action='store',
-    help='relative path to output clean transactions directory',
+    help=f'relative path to output clean transactions directory. Default: {PATH_DEFAULT_CLEAN_TXS}',
     default=PATH_DEFAULT_CLEAN_TXS)
 
 parser.add_argument('--mode',

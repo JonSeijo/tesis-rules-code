@@ -177,7 +177,8 @@ class GenerateProteinRuleDb(object):
         # TODO: Buscar una mejor forma de dividir el diccionario "proteins"
         # Aca divido el diccionario en N listas de tuplas para apliar paralelismo
         curr_bucket = 0
-        num_buckets = 7 # Amount of processes
+        # TODO: parametrizar
+        num_buckets = 4 # Amount of processes
         proteins_items_list = [[] for _ in range(num_buckets)]
 
         for idProtein, protein in proteins.items():

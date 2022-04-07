@@ -21,7 +21,7 @@
 ### Python
 - python3 -m venv venv-tesis 
   : source venv-tesis/bin/activate
-  : pip install requirements.txt
+  : pip install -r requirements.txt
 
 # Run
 
