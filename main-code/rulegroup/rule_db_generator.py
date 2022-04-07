@@ -15,13 +15,9 @@ from rule_stats import RuleStats
 import sqlite3
 
 from pathos.multiprocessing import ProcessingPool as Pool
-# from multiprocessing import Pool
 
 
 def insert_coverage_info_of_proteins(process_num, proteins, rules, dbfilename):
-# def insert_coverage_info_of_proteins(parameters_list):
-    # process_num, proteins, rules, dbfilename = parameters_list
-
     rs = RuleStats(dbfilename)
     cov = RuleCoverage("","","test.txt","vector")
 
@@ -68,11 +64,12 @@ def insert_coverage_info_of_proteins(process_num, proteins, rules, dbfilename):
 
 class GenerateProteinRuleDb(object):
     """docstring for GenerateProteinRuleDb"""
-    def __init__(self, filename="protein-rules.db"):
+    def __init__(self, nthreads, filename="protein-rules.db"):
         super(GenerateProteinRuleDb, self).__init__()
         self.proteins = {}
         self.rules = {}
         self.filename = filename
+        self.nthreads = nthreads
 
     def createDB(self, proteinPath, ruleFile):
         """ Create a DB from scratch """
@@ -177,8 +174,8 @@ class GenerateProteinRuleDb(object):
         # TODO: Buscar una mejor forma de dividir el diccionario "proteins"
         # Aca divido el diccionario en N listas de tuplas para apliar paralelismo
         curr_bucket = 0
-        # TODO: parametrizar
-        num_buckets = 4 # Amount of processes
+
+        num_buckets = self.nthreads # Amount of processes
         proteins_items_list = [[] for _ in range(num_buckets)]
 
         for idProtein, protein in proteins.items():
@@ -350,14 +347,24 @@ def main():
     parser.add_argument("--ruleFile", help="The file with the rules to check for coverage against the proteins", type=str)
     parser.add_argument('--add', help="Add rules/proteins to the existing sqlite file", type=bool)
     parser.add_argument('--filename', help="Filename for the SQLite database", type=str, default="protein-rules.db")
-
+    parser.add_argument('--threads', help="Amount of threads", type=int, default=4)
     args = parser.parse_args()
 
     if parameterNotSet(args.proteinPath):
         print("ERROR: proteinPath required and not set!! - Exiting...")
         sys.exit(-1)
 
-    rc = GenerateProteinRuleDb(args.filename)
+    print("================================================")
+    print("Running rule_db_generator with arguments:")
+    print()
+    print("proteinPath:", args.proteinPath)
+    print("ruleFile:   ", args.ruleFile)
+    print("add:        ", args.add)
+    print("filename:   ", args.filename)
+    print("threads:    ", args.threads)
+    print("================================================")
+
+    rc = GenerateProteinRuleDb(args.threads, args.filename)
     if args.add:
         rc.addProteins(args.proteinPath)
     else:
