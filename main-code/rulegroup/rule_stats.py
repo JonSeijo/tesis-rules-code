@@ -40,13 +40,14 @@ class RuleStats(object):
     def __init__(self, filename="protein-rules.db"):
         """ Build the object and connect to the DB """
         super(RuleStats, self).__init__()
-        self.connection = sqlite3.connect(filename)
-        self.cursor = self.connection.cursor()
+        self.filename = filename
+        # self.connection = sqlite3.connect(self.filename)
+        # self.cursor = self.connection.cursor()
         self.ocurrenceCache = {}
         self.distancesBetweenConsecutiveRepeatsByItem = {}
 
-    def __del__(self):
-        self.connection.close()
+    # def __del__(self):
+        # self.connection.close()
 
 
     def putInCache(self, key, value):
@@ -129,11 +130,20 @@ class RuleStats(object):
 
     def itemIterator(self):
         """ Returns a sqlite iterator to the distinct items"""
-        return self.cursor.execute('''SELECT DISTINCT(item) FROM item''')
+        connection = sqlite3.connect(self.filename)
+        cursor = connection.cursor()
+        res = cursor.execute('''SELECT DISTINCT(item) FROM item''')
+        connection.close()
+        return res
 
     def ruleIterator(self):
         """ Returns an iterator to the rule data table """
-        return self.cursor.execute('''SELECT rule FROM rule''')
+        connection = sqlite3.connect(self.filename)
+        cursor = connection.cursor()
+        res = cursor.execute('''SELECT rule FROM rule''')
+        connection.close()
+        return res
+
 
     def groupFrequencyDataByDistance(self, items):
         """ Group frequencies by distance """
@@ -224,8 +234,11 @@ class RuleStats(object):
             ocurrencesInRules[item] = 0
             ocurrencesInProteins[item] = 0
             
+        connection = sqlite3.connect(self.filename)
+        cursor = connection.cursor()
+
         #Fetch rows and search for item repeats in rows
-        for proteinRow in self.cursor.execute("SELECT encoding FROM protein"):
+        for proteinRow in cursor.execute("SELECT encoding FROM protein"):
             qtyProteins = qtyProteins + 1
             for item,count in ocurrencesInProteins.items():
                 actual = 0
@@ -307,7 +320,10 @@ class RuleStats(object):
         """ Computes the distances for consecutive repeats of items in the proteins. According to the grouping option and mode different criterias are used """
         if mode is None:
             mode = self.SYNONYMS_ONLY
-        otherCursor = self.connection.cursor()
+
+        connection = sqlite3.connect(self.filename)
+        otherCursor = connection.cursor()
+
         coverageIterator = otherCursor.execute('''
             SELECT r.consequent, rc.consequentRepeatsDistances, rc.consequentOcurrenceType, rc.idProtein, p.encoding, r.rule, r.idRule FROM rule_coverage rc 
                 INNER JOIN rule r ON rc.idRule = r.idRule
@@ -321,6 +337,9 @@ class RuleStats(object):
             self.computeDistancesWithGroups(self.itemIterator(), coverageIterator, groupedByEditDistance, mode)
         else:
             self.computeDistances(self.itemIterator(), coverageIterator)
+
+        connection.commit()
+        connection.close()
 
     def computeDistances(self, itemIterator, coverage):
         """ Generate the distance between consecutive repetitions for further analysis """
@@ -364,7 +383,11 @@ class RuleStats(object):
 
         # Add the rules keyed by consequent (eg rules = {"LISH": {{id1, id2, ...}}}
         rules = {}
-        otherCursor = self.connection.cursor()
+        
+        connection = sqlite3.connect(self.filename)
+        cursor = connection.cursor()
+        otherCursor = connection.cursor()
+
         for r in otherCursor.execute('''SELECT idRule,consequent FROM rule'''):
             consequent = r[1].strip()
             if consequent not in rules:
@@ -372,7 +395,7 @@ class RuleStats(object):
             rules[consequent].add(r[0])
         
         for row in coverage:
-            c = self.connection.cursor()
+            c = connection.cursor()
             idRulesThatCoverTheSameProtein = set()
             for r in c.execute('''SELECT idRule FROM rule_coverage WHERE idProtein = ?''', (row[3],)):
                 idRulesThatCoverTheSameProtein.add(r[0]) 
@@ -401,6 +424,8 @@ class RuleStats(object):
                     file.write("%s\t%s\t%s\t%s\t%s\t%s\n" % (candidate, distance, ocurrenceType, row[3], row[6], graphMode))
             
         file.close()
+        connection.commit()
+        connection.close()
 
     def rulesAndItemsForClusteringetItemsGroupedByEditDistance(self, ruleIterator):
         """ Get rules and items for cluster analysis """
@@ -421,7 +446,9 @@ class RuleStats(object):
         """ Compute distances with clusterized rules. In the same pass compute the ocurrence matrix for the items for each protein"""
         groupedItems = {}
         replacementMap = {}
-        c = self.connection.cursor()
+
+        connection = sqlite3.connect(self.filename)
+        c = connection.cursor()
 
         rules, items = self.rulesAndItemsForClusteringetItemsGroupedByEditDistance(c.execute("SELECT idRule, rule FROM rule"))
         groupedItems, replacementMap = self.getItemsGroupedByEditDistance(items)
@@ -459,6 +486,9 @@ class RuleStats(object):
         file = open(outputFilename, "w")
         file.write(ocurrenceMatrix.printMatrix())
         file.close()
+
+        connection.commit()
+        connection.close()
 
 
     def getClusterizedRules(self, rules, synonyms):
@@ -509,7 +539,8 @@ class RuleStats(object):
         print("Leídos %d ítems..." % len(items))
 
         i = 0
-        c = self.connection.cursor()
+        connection = sqlite3.connect(self.filename)
+        c = connection.cursor()
         for row in c.execute("SELECT encoding,idProtein FROM protein"): #For each protein
             i = i+1
             if i%1000 == 0:
@@ -527,6 +558,8 @@ class RuleStats(object):
                 file.write(tw)
 
         file.close()
+        connection.commit()
+        connection.close()
 
     def getNotCoveredProteinsDistances(self, outputFilename="distances_not_covered.txt"):
         """ Takes every item and every rule and generates the distances_file according to whether they match and 
