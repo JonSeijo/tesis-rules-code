@@ -1,0 +1,10 @@
+{
+  "site_package_search_strategy": "all",
+  "source_directories": [
+    "."
+  ],
+  "taint_models_path": "/home/jonno/exactas/tesis/tesis-jonno/venv-tesis/lib/pyre_check/taint",
+  "ignore_all_errors": [
+    "main-code\/*"
+  ]
+}
