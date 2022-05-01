@@ -1,7 +1,7 @@
 import argparse
 import pathlib
 import pandas as pd
-from typing import List, Tuple, Set
+from typing import Any, List, Tuple, Set, TypeVar
 
 class RuleBuildException(Exception):
     pass
@@ -53,20 +53,39 @@ def print_info(intersection, title):
     print("#intersection:", len(intersection))
     print()
 
+
+def generic_list_intersection(
+    collection_a: List[Any], collection_b: List[Any]
+) -> List[Any]:
+    return [ a for a in collection_a if a in collection_b ]
+
+def generic_set_intersection(
+    collection_a: Set[Any], collection_b: Set[Any]
+) -> Set[Any]:
+    return { a for a in collection_a if a in collection_b }
+
+
 def list_intersection(list_a, list_b):
-    return [ item for item in list_b if item in list_a ]
+    return generic_list_intersection(list_a, list_b)
 
 def rules_intersection_exact(
     rules_a: List[Tuple[Set[str], Set[str]]], 
     rules_b: List[Tuple[Set[str], Set[str]]]
 ) -> List[Tuple[Set[str], Set[str]]]:
-    return [ rule for rule in rules_a if rule in rules_b ]
+    # Esto asume comparador de rules!
+    return generic_list_intersection(rules_a, rules_b)
 
 def sets_intersection_exact(
     set_a: List[Set[str]],
     set_b: List[Set[str]],
 ) -> List[Set[str]]:
-    return [ itemset for itemset in set_a if itemset in set_b ]
+    return generic_list_intersection(set_a, set_b)
+
+def itemsets_intersection_exact(
+    itemsets_a: Set[str],
+    itemsets_b: Set[str],
+) -> Set[str]:
+    return generic_set_intersection(itemsets_a, itemsets_b)
 
 def antecedents(
     rules: List[Tuple[Set[str], Set[str]]]
@@ -78,11 +97,16 @@ def consequents(
 ) -> List[Set[str]]:
     return [ rule[1] for rule in rules ]
 
-def _itemsets(rule_list):
+def itemsets(
+    rules: List[Tuple[Set[str], Set[str]]]
+) -> Set[str]:
     all_itemsets = set()
-    for rule in rule_list:
-        print()
-
+    for rule in rules:
+        for itemset in rule[0]:  # Antecedent
+            all_itemsets.add(itemset)
+        for itemset in rule[1]:  # Consequent
+            all_itemsets.add(itemset)
+    return all_itemsets
 
 def interseccion_exacta():
     return rules_intersection_exact(rules_a, rules_b)
@@ -93,6 +117,8 @@ def interseccion_exacta_antecedentes():
 def interseccion_exacta_consecuentes():
     return sets_intersection_exact(consequents(rules_a), consequents(rules_b))
 
+def mrs_interseccion_exacta():
+    return itemsets_intersection_exact(itemsets(rules_a), itemsets(rules_b))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run rules comparison')
@@ -124,4 +150,5 @@ if __name__ == '__main__':
     print_info(interseccion_exacta(), "Interseccion exacta")
     print_info(interseccion_exacta_antecedentes(), "Interseccion exacta antecedentes")
     print_info(interseccion_exacta_consecuentes(), "Interseccion exacta consecuentes")
+    print_info(mrs_interseccion_exacta(), "Interseccion exacta MRs (itemsets)")
 
