@@ -100,7 +100,20 @@ class TestRuleComparison(unittest.TestCase):
         self.assertEqual(4, cr.levenshtein("", "TASA"))
         self.assertEqual(0, cr.levenshtein("ASDF", "ASDF"))
 
+    def test_mrs_interseccion_lev_dist(self) -> None:
+        # Tanto "casa" como "tasa" estan a distancia 1, ambos estan en la interseccion
+        result = cr.itemsets_interseccion_lev_dist(1, {"CASA"}, {"TASA"})
+        self.assertEqual({"CASA", "TASA"}, result)
+
+        result = cr.itemsets_interseccion_lev_dist(1, {"CASA"}, {"CASA"})
+        self.assertEqual({"CASA"}, result)
+
+        result = cr.itemsets_interseccion_lev_dist(1, {"CASA"}, {"PALA"})
+        self.assertEqual(set(), result)
+
+        result = cr.itemsets_interseccion_lev_dist(2, {"CASA", "ASDF"}, {"TAPA", "ASER"})
+        self.assertEqual({"CASA", "ASDF", "TAPA", "ASER"}, result)
+
 
 if __name__ == '__main__':
     unittest.main()
-

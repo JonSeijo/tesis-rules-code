@@ -128,18 +128,25 @@ def mrs_interseccion_exacta() -> Set[str]:
 def levenshtein(s1: str, s2: str) -> int:
     return nltk.edit_distance(s1, s2)
 
-def mrs_interseccion_lev_1():
-    itemsets_a = itemsets(rules_a)
-    itemsets_b = itemsets(rules_b)
+def itemsets_interseccion_lev_dist(dist: int, itemsets_a: Set[str], itemsets_b: Set[str]) -> Set[str]:
     interseccion = set()
 
     for item_a in itemsets_a:
         for item_b in itemsets_b:
-            # item_a en la interseccion si existe b con distancia de edicion <= 1
-            if levenshtein(item_a, item_b) <= 1:
+            # item_a, item_b en la interseccion si existe b con distancia de edicion <= dist
+            if levenshtein(item_a, item_b) <= dist:
                 interseccion.add(item_a)
+                interseccion.add(item_b)
+                continue
 
     return interseccion
+
+
+def mrs_interseccion_lev_1():
+    return itemsets_interseccion_lev_dist(1, itemsets(rules_a), itemsets(rules_b))
+
+def mrs_interseccion_lev_2():
+    return itemsets_interseccion_lev_dist(2, itemsets(rules_a), itemsets(rules_b))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run rules comparison')
@@ -173,4 +180,5 @@ if __name__ == '__main__':
     print_info(interseccion_exacta_consecuentes(), "Interseccion exacta consecuentes")
     print_info(mrs_interseccion_exacta(), "Interseccion exacta MRs (itemsets unicos)")
     print_info(mrs_interseccion_lev_1(), "Interseccion distancia=1 MRs (itemsets unicos)")
+    print_info(mrs_interseccion_lev_2(), "Interseccion distancia=2 MRs (itemsets unicos)")
 
