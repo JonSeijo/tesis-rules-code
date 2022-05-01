@@ -6,7 +6,7 @@ import compare_rules as cr
 
 class TestRuleComparison(unittest.TestCase):
 
-    def test_build_itemset(self):
+    def test_build_itemset(self) -> None:
         result = cr.build_itemset("{GNTA,HLAA,NTAL,PLHL}")
         expected = set(["GNTA", "HLAA", "NTAL", "PLHL"])
         self.assertEqual(expected, result)
@@ -15,7 +15,7 @@ class TestRuleComparison(unittest.TestCase):
             cr.build_itemset("GNTA,HLAA,NTAL,PLHL")
 
 
-    def test_rule_from_str(self):
+    def test_rule_from_str(self) -> None:
         # "{ALHV,LHIA} => {LHVA}"  ----> ({ALHV,LHIA}, {LHVA})
         result = cr.rule_from_str("{ALHV,LHIA} => {LHVA}")
         expected = (set(["ALHV", "LHIA"]), set(["LHVA"]))
@@ -27,14 +27,14 @@ class TestRuleComparison(unittest.TestCase):
         with self.assertRaises(cr.RuleBuildException):
             cr.rule_from_str("{ALHV,LHIA} => ")
 
-    def test_interseccion_base(self):
+    def test_interseccion_base(self) -> None:
         self.assertEqual([1], cr.list_intersection([1, 2, 3], [1, 4, 5]))
         self.assertEqual([], cr.list_intersection([1, 2, 3], [4, 5, 6]))
         self.assertEqual([], cr.list_intersection([1, 2, 3], []))
         self.assertEqual([], cr.list_intersection([], [4, 5, 6]))
         self.assertEqual(["hola"], cr.list_intersection(["hola", "como", "estas"], ["hola", "komo", "estaz"]))
 
-    def test_rules_intersection(self):
+    def test_rules_intersection(self) -> None:
         result = cr.rules_intersection_exact(
             [   cr.rule_from_str("{HOLA,COMO} => {ESTA}"),
                 cr.rule_from_str("{ESTO,NOOO} => {ESTA}")],
@@ -47,7 +47,7 @@ class TestRuleComparison(unittest.TestCase):
         self.assertEqual(expected_1, result)
         self.assertEqual(expected_2, result)
 
-    def test_antecedents(self):
+    def test_antecedents(self) -> None:
         result = cr.antecedents([
            cr.rule_from_str("{HOLA,TODO} => {BIEN}"),
            cr.rule_from_str("{TEST} => {ASDF}") 
@@ -55,7 +55,7 @@ class TestRuleComparison(unittest.TestCase):
         expected = [{"HOLA", "TODO"}, {"TEST"}]
         self.assertEqual(expected, result)
 
-    def test_consequents(self):
+    def test_consequents(self) -> None:
         result = cr.consequents([
            cr.rule_from_str("{HOLA,TODO} => {BIEN}"),
            cr.rule_from_str("{TEST} => {ASDF}") 
@@ -63,7 +63,7 @@ class TestRuleComparison(unittest.TestCase):
         expected = [{"BIEN"}, {"ASDF"}]
         self.assertEqual(expected, result)
 
-    def test_itemsets(self):
+    def test_itemsets(self) -> None:
         result = cr.itemsets([
            cr.rule_from_str("{HOLA,TODO} => {BIEN}"),
            cr.rule_from_str("{TODO} => {BIEN}"),
@@ -72,7 +72,7 @@ class TestRuleComparison(unittest.TestCase):
         expected = {"HOLA", "TODO", "BIEN", "TEST", "ASDF"}
         self.assertEqual(expected, result)
 
-    def test_sets_intersection_exact(self):
+    def test_sets_intersection_exact(self) -> None:
         result = cr.sets_intersection_exact(
             [{"HOLA", "TODO", "BIEN"}, {"HOLA", "TODO"}],
             [{"CHAU", "TODO", "BIEN"}, {"CHAU", "TODO"}]
@@ -86,7 +86,7 @@ class TestRuleComparison(unittest.TestCase):
         self.assertEqual([{"HOLA", "TODO"}], result)
 
 
-    def test_itemsets_intersection_exact(self):
+    def test_itemsets_intersection_exact(self) -> None:
         result = cr.itemsets_intersection_exact(
             {"HOLA", "TODO", "BIEN", "BLAB"},
             {"TODO", "BIEN", "CHAU", "BAII", "ASDF"},
@@ -94,7 +94,7 @@ class TestRuleComparison(unittest.TestCase):
         expected = {"TODO", "BIEN"}
         self.assertEqual(expected, result)
 
-    def test_levenshtein(self):
+    def test_levenshtein(self) -> None:
         self.assertEqual(1, cr.levenshtein("CASA", "TASA"))
         self.assertEqual(2, cr.levenshtein("CAZA", "TASA"))
         self.assertEqual(4, cr.levenshtein("", "TASA"))

@@ -6,6 +6,7 @@ import time
 from datetime import timedelta
 import pathlib
 import sys
+from typing import List
 
 DIR_MAXIMAL_REPEATS_GENERATOR = "maximal-repeats-transactions/"
 PATH_DEFAULT_FAMILY_DATASET = "../db/canonicalFamilyDataset/familyDataset"
@@ -13,7 +14,7 @@ DEFAULT_MIN_LEN = 4
 DEFAULT_MAX_LEN = 999999
 DEFUALT_MIN_PROTEINS = 1
 
-def map_str(ls):
+def map_str(ls) -> List[str]:
     return list(map(str, ls))
 
 parser = argparse.ArgumentParser(description='Run tx-generator')
@@ -55,7 +56,7 @@ parser.add_argument('-no_confirmation', action='store_true', help=' flag for con
 
 # ------------------------------------------------
 
-args = parser.parse_args()
+args: argparse.Namespace = parser.parse_args()
 
 family = args.family
 
@@ -66,7 +67,7 @@ min_len = args.min_len
 max_len = args.max_len
 min_proteins = args.min_proteins
 
-ask_confirmation = not args.no_confirmation
+ask_confirmation: bool = not args.no_confirmation
 
 executable = f"./{DIR_MAXIMAL_REPEATS_GENERATOR}tx-generator"
 input_dir = path_family_db + "/" + family
@@ -89,7 +90,7 @@ print("                ")
 
 # Ask for confirmation
 if ask_confirmation:
-    answer = input("-----\nContinue? YES/NO: ")
+    answer: str = input("-----\nContinue? YES/NO: ")
     if answer.upper() not in ["Y", "YE", "YES"]:
         sys.exit()
     print("\n\n\n")
@@ -101,9 +102,9 @@ subprocess.run(["make"], cwd=DIR_MAXIMAL_REPEATS_GENERATOR)
 
 # Generate transactions
 print("Running tx-generator...")
-start_txgen = time.time()
+start_txgen: float = time.time()
 subprocess.run(map_str([executable, family, input_dir, output_prefix, min_len, max_len, min_proteins]))
-end_txgen = time.time()
+end_txgen: float = time.time()
 
 print()
 print("time: ", str(timedelta(seconds=end_txgen-start_txgen)))

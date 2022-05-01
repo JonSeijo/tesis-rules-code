@@ -3,10 +3,11 @@
 import os
 
 import pandas as pd
+from typing import List
 
 root = "output/rules/"
 outroot = "output/simplified_rules/"
-rules_files = os.listdir(root)
+rules_files: List[str] = os.listdir(root)
 
 for filename in rules_files:
     fullpath = os.path.join(root, filename)

@@ -21,7 +21,7 @@ parser.add_argument('-sto',
     required=True,
     help='names of the consequents to analyse')
 
-args = parser.parse_args()
+args: argparse.Namespace = parser.parse_args()
 
 
 path_sto = str(args.sto_path)
@@ -36,7 +36,7 @@ all_rules = []
 
 info_by_sto = {}
 
-def process_file(fullpath, dict_info):
+def process_file(fullpath, dict_info) -> None:
     """ Reads the file received and process each line creating words """
     with open(fullpath, 'r') as infile:
         for line in infile:
@@ -50,7 +50,7 @@ def process_file(fullpath, dict_info):
 # Ojo, hay dos formatos:
 #   AAKG-LHAA-AAAK-0-UniRef90_UPI00038F1754.fasta, ALAAAKGG
 #   PLHL-VEVL-LHLA-0-UniRef90_Q8R516-2.fasta, TALHLAAL
-def process_item(rule_protein, context, dict_info):
+def process_item(rule_protein, context, dict_info) -> None:
     splitted = rule_protein.split("-")
     protein = splitted[-1]
 

@@ -12,15 +12,16 @@ import sys
 import os
 
 from multiprocessing import Pool
+from typing import List
 
 PATH_JM_CODE = "main-code/"
 PATH_DEFAULT_TXS = "output/transactions/"
 PATH_DEFAULT_CLEAN_TXS = "output/clean_transactions/"
 
-def map_str(ls):
+def map_str(ls) -> List[str]:
     return list(map(str, ls))
 
-def show_posible_txs():
+def show_posible_txs() -> None:
     print("-----------")
     print("Transactions in default location: ")
     txs_names = sorted([ fname for fname in os.listdir(PATH_DEFAULT_TXS)])
@@ -28,7 +29,7 @@ def show_posible_txs():
         print(tx[:-4])
     print("-----------")
 
-def validate_txs_names(path_input_dir, txs_names):
+def validate_txs_names(path_input_dir, txs_names) -> None:
     output_dir_contents = os.listdir(path_input_dir)
     for tx_name in txs_names:
         if tx_name + ".csv" not in output_dir_contents:
@@ -73,12 +74,12 @@ parser.add_argument('-no_confirmation', action='store_true', help=' flag for con
 
 show_posible_txs()
 
-args = parser.parse_args()
+args: argparse.Namespace = parser.parse_args()
 
 path_input_dir = str(args.input_dir)
 path_output_dir = str(args.output_dir)
 
-ask_confirmation = not args.no_confirmation
+ask_confirmation: bool = not args.no_confirmation
 
 num_threads = args.threads
 
@@ -102,7 +103,7 @@ print("                ")
 
 # Ask for confirmation
 if ask_confirmation:
-    answer = input("-----\nContinue? YES/NO: ")
+    answer: str = input("-----\nContinue? YES/NO: ")
     if answer.upper() not in ["Y", "YE", "YES"]:
         sys.exit()
     print("\n\n\n")
@@ -114,7 +115,7 @@ subprocess.run(["make", "cleaner"], cwd=PATH_JM_CODE)
 print()
 
 
-def execute_subprocess(tx_name):
+def execute_subprocess(tx_name) -> None:
     input_file = path_input_dir + "/" + tx_name + ".csv"
     output_file = path_output_dir + "/" + tx_name + "_" + str_mode + ".csv"
     # ------------------------------------------------
@@ -129,11 +130,11 @@ def execute_subprocess(tx_name):
     subprocess.run(map_str([executable, input_file, clean_mode, output_file]))
 
 
-start_txgen = time.time()
+start_txgen: float = time.time()
 
 with Pool(num_threads) as p:
     p.map(execute_subprocess, txs_names)
 
-end_txgen = time.time()
+end_txgen: float = time.time()
 print()
 print(f"time for cleaning all txs:", str(timedelta(seconds=end_txgen-start_txgen)))

@@ -2,7 +2,7 @@ import argparse
 import nltk
 import pathlib
 import pandas as pd
-from typing import Any, List, Tuple, Set, TypeVar
+from typing import Sized, Any, List, Tuple, Set, TypeVar
 
 
 class RuleBuildException(Exception):
@@ -36,11 +36,11 @@ def rule_from_str(rule_str: str) -> Tuple[Set[str], Set[str]]:
     return build_itemset(left), build_itemset(right)
 
 
-def build_rule_list_from_df(df_rules):
+def build_rule_list_from_df(df_rules) -> List[Tuple[Set[str], Set[str]]]:
     return [rule_from_str(rule[0]) for idx, rule in df_rules[["rules"]].iterrows()]
 
 
-def print_header():
+def print_header() -> None:
     print("============================")
     print("rules_a:", path_rules_a.split("/")[-1])
     print("rules_b:", path_rules_b.split("/")[-1])
@@ -52,7 +52,7 @@ def print_header():
     print("#itemsets_b (unicos):", len(itemsets(rules_b)))
     print()
 
-def print_info(intersection, title):
+def print_info(intersection: Sized, title) -> None:
     print("============================")
     print(title)
     print("#intersection:", len(intersection))
@@ -113,16 +113,16 @@ def itemsets(
             all_itemsets.add(itemset)
     return all_itemsets
 
-def interseccion_exacta():
+def interseccion_exacta() -> List[Tuple[Set[str], Set[str]]]:
     return rules_intersection_exact(rules_a, rules_b)
 
-def interseccion_exacta_antecedentes():
+def interseccion_exacta_antecedentes() -> List[Set[str]]:
     return sets_intersection_exact(antecedents(rules_a), antecedents(rules_b))
 
-def interseccion_exacta_consecuentes():
+def interseccion_exacta_consecuentes() -> List[Set[str]]:
     return sets_intersection_exact(consequents(rules_a), consequents(rules_b))
 
-def mrs_interseccion_exacta():
+def mrs_interseccion_exacta() -> Set[str]:
     return itemsets_intersection_exact(itemsets(rules_a), itemsets(rules_b))
 
 def levenshtein(s1: str, s2: str) -> int:
@@ -157,7 +157,7 @@ if __name__ == '__main__':
     # rules_a = "ank_len4_ALL_s0.025_c0.9.csv"
     # rules_b = "NEWAnk_len4_ALL_s0.025_c0.9.csv"
 
-    args = parser.parse_args()
+    args: argparse.Namespace = parser.parse_args()
     path_rules_a = str(args.path_rules_a)
     path_rules_b = str(args.path_rules_b)
 
