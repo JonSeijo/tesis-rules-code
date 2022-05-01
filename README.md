@@ -31,6 +31,8 @@
 
 - Generar reglas: `generate_rules.r`
 
+- Simplificar output reglas: `simplify_rules_format.py`
+
 - Comparar reglas: `compare_rules.py`
 
 - Generacion de logos:
