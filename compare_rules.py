@@ -1,7 +1,9 @@
 import argparse
+import nltk
 import pathlib
 import pandas as pd
 from typing import Any, List, Tuple, Set, TypeVar
+
 
 class RuleBuildException(Exception):
     pass
@@ -45,6 +47,9 @@ def print_header():
     print()
     print("#rules_a:", len(rules_a))
     print("#rules_b:", len(rules_b))
+    print()
+    print("#itemsets_a (unicos):", len(itemsets(rules_a)))
+    print("#itemsets_b (unicos):", len(itemsets(rules_b)))
     print()
 
 def print_info(intersection, title):
@@ -120,6 +125,22 @@ def interseccion_exacta_consecuentes():
 def mrs_interseccion_exacta():
     return itemsets_intersection_exact(itemsets(rules_a), itemsets(rules_b))
 
+def levenshtein(s1: str, s2: str) -> int:
+    return nltk.edit_distance(s1, s2)
+
+def mrs_interseccion_lev_1():
+    itemsets_a = itemsets(rules_a)
+    itemsets_b = itemsets(rules_b)
+    interseccion = set()
+
+    for item_a in itemsets_a:
+        for item_b in itemsets_b:
+            # item_a en la interseccion si existe b con distancia de edicion <= 1
+            if levenshtein(item_a, item_b) <= 1:
+                interseccion.add(item_a)
+
+    return interseccion
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run rules comparison')
 
@@ -150,5 +171,6 @@ if __name__ == '__main__':
     print_info(interseccion_exacta(), "Interseccion exacta")
     print_info(interseccion_exacta_antecedentes(), "Interseccion exacta antecedentes")
     print_info(interseccion_exacta_consecuentes(), "Interseccion exacta consecuentes")
-    print_info(mrs_interseccion_exacta(), "Interseccion exacta MRs (itemsets)")
+    print_info(mrs_interseccion_exacta(), "Interseccion exacta MRs (itemsets unicos)")
+    print_info(mrs_interseccion_lev_1(), "Interseccion distancia=1 MRs (itemsets unicos)")
 

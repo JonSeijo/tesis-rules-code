@@ -94,6 +94,13 @@ class TestRuleComparison(unittest.TestCase):
         expected = {"TODO", "BIEN"}
         self.assertEqual(expected, result)
 
+    def test_levenshtein(self):
+        self.assertEqual(1, cr.levenshtein("CASA", "TASA"))
+        self.assertEqual(2, cr.levenshtein("CAZA", "TASA"))
+        self.assertEqual(4, cr.levenshtein("", "TASA"))
+        self.assertEqual(0, cr.levenshtein("ASDF", "ASDF"))
+
+
 if __name__ == '__main__':
     unittest.main()
 
