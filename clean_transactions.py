@@ -58,7 +58,8 @@ parser.add_argument('--output_dir',
 parser.add_argument('--mode',
     type=str,
     choices=['substring', 'superstring'],
-    help=' substring or superstring mode for cleaning')
+    help=' substring or superstring mode for cleaning. Default: substring',
+    default='substring')
 
 parser.add_argument('--threads',
     type=int,
