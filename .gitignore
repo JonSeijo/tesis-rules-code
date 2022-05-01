@@ -1,3 +1,10 @@
+# Rstudio
+.RData
+.Rhistory
+
+# DBs
+main-code/*.db
+
 # Output
 output/
 
