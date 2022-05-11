@@ -7,6 +7,7 @@ main-code/*.db
 
 # Output
 output/
+output (copy)/
 
 # Repos
 maximal-repeats-transactions/
