@@ -1,7 +1,7 @@
 import os
 
-from Bio.Seq import Seq
-from Bio.SeqRecord import SeqRecord
+from utils import list_valid_families
+
 from Bio import SeqIO
 
 PATH_DATASETS_MULTIPLE = "../db/canonicalFamilyDataset/familyDataset"
@@ -34,21 +34,9 @@ def migrate_dataset(family_name):
     proteins = read_db_multiples(family_name)
     write_db_single(proteins, family_name)
 
-def is_invalid_family(family_name):
-    family_name = family_name.lower()
-    for needle in ["uniform", "scrambled", "without", "_", "mix"]:
-        if needle in family_name:
-            return True
-    return False
-
-def valid_families(families):
-    return [ family_name for family_name in families if not is_invalid_family(family_name) ]
-
 if __name__ == '__main__':
-    dataset_names = os.listdir(PATH_DATASETS_MULTIPLE)
-    families = valid_families(dataset_names)
+    families = list_valid_families(PATH_DATASETS_MULTIPLE)
 
     for family_name in families:
         print(f"Migrating {family_name}")
         # migrate_dataset(family_name)
-
