@@ -1,0 +1,47 @@
+Family Name; Type; Total number of residues; Pfam ID
+ABC tran ;Globular; 24,000,412; PF00005
+Ank ;Repeat; 24,000,002; PF00023
+Annexin ;Repeat; 1,327,710; PF00191
+Arm ;Repeat; 14,246,437; PF00514
+Collagen ;Repeat; 6,213,389; PF01391
+CorA ;Globular; 5,855,946; PF01544
+CW binding 1 ;Repeat; 3,070,696; PF01473
+Fer4 ;Repeat; 13,342,438; PF00037
+Filamin ;Repeat; 5,278,919; PF00630
+GDC-P ;Globular; 4,904,935; PF02347
+Globin ;Globular; 2,013,817; PF00042
+Glyco hydro 19 ;Globular; 1,099,396; PF00182
+GreA GreB ;Globular; 1,561,778; PF01272
+HEAT ;Repeat; 24,000,562; PF02985
+Helicase C ;Globular; 24,001,596; PF00271
+HemolysinCabind ;Repeat; 12,189,037; PF00353
+Hexapep ;Repeat; 10,993,336; PF00132
+Kelch 1 ;Repeat; 7,901,965; PF01344
+Ldl recept a ;Repeat; 13,481,548; PF00057
+Ldl recept b ;Repeat; 5,706,663; PF00058
+LRR 1 ;Repeat; 24,000,048; PF00560
+MgtE ;Globular; 2,304,763; PF01769
+MIP ;Globular; 3,232,513; PF00230
+Mito carr ;Repeat; 9,276,723; PF00153
+MORN ;Repeat; 4,254,637; PF02493
+Nebulin ;Repeat; 1,765,482; PF00880
+PBP ;Globular; 1,475,270; PF01161
+PD40 ;Repeat; 22,286,434; PF07676
+Pentapeptide ;Repeat; 5,625,441; PF00805
+Peptidase C25 ;Globular; 1,260,515; PF01364
+PFL-like ;Globular; 1,952,299; PF02901
+PIN ;Globular; 3,151,435; PF01850
+Pkinase ;Globular; 24,000,261; PF00069
+PP-binding ;Globular; 24,000,381; PF00550
+PPR ;Repeat; 24,000,333; PF01535
+PUD ;Globular; 1,173,193; PF03714
+PUF ;Repeat; 2,956,344; PF00806
+Rhomboid ;Globular; 4,786,260; PF01694
+Sel1 ;Repeat; 9,677,695; PF08238
+TerB ;Globular; 1,674,918; PF05099
+Thaumatin ;Globular; 828,946; PF00314
+TPR 1 ;Repeat; 24,000,070; PF00515
+TSP 1 ;Repeat; 11,488,042; PF00090
+Val tRNA-synt C ;Globular; 4,098,556; PF10458
+WD40 ;Repeat; 24,000,119; PF00400
+YadA head ;Repeat; 4,451,109; PF05658
