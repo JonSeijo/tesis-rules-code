@@ -182,7 +182,25 @@ def mrs_reglas_interseccion_lev_2() -> Set[str]:
 def mrs_txs_interseccion_exacta() -> Set[str]:
     return itemsets_intersection_exact(mrs_unicos_a, mrs_unicos_b)
 
-# TODO: Unit test!
+def mrs_txs_interseccion_lev_1(mrs_a: Set[str], mrs_b: Set[str]) -> Set[str]:
+    intersection = set()
+    for mr in mrs_a:
+        for mr_dist1 in words_with_dist_1(mr):
+            if mr_dist1 in mrs_b:
+                intersection.add(mr)
+                intersection.add(mr_dist1)
+
+    return intersection
+
+def words_with_dist_1(word: str):
+    words_dist_1 = set()
+    words_dist_1.add(word)
+    for i in range(len(word)):
+        for c in 'abcdefghijklmnopqrstuvwxyz':
+            newword = word[:i] + c.upper() + word[i+1:]
+            words_dist_1.add(newword)
+    return words_dist_1
+
 def mrs_txs_frecuencia_mayor(freq: int, mrs: List[str]) -> Set[str]:
     counts = dict()
     for mr in mrs:
@@ -209,7 +227,8 @@ def mrs_txs_interseccion_lev_1_frecuentes() -> Set[str]:
     return iterables_interseccion_lev_dist(1, freq_a, freq_b)
 
 def consequents_intersection_lev_1() -> Set[str]:
-    return iterables_interseccion_lev_dist(1, consequents(rules_a), consequents(rules_b))
+    return iterables_interseccion_lev_dist(
+        1, consequents(rules_a), consequents(rules_b))
 
 
 # TODO: Pensar como sería una comparacion de antecedentes??
@@ -276,9 +295,10 @@ if __name__ == '__main__':
     print_info(interseccion_exacta(), "Interseccion exacta")
     print_info(interseccion_exacta_antecedentes(), "Interseccion exacta antecedentes")
     print_info(interseccion_exacta_consecuentes(), "Interseccion exacta consecuentes")
-    print_info(mrs_reglas_interseccion_exacta(), "Interseccion exacta MRs (itemsets unicos)")
-    print_info(mrs_reglas_interseccion_lev_1(), "Interseccion distancia=1 MRs (itemsets unicos)")
-    print_info(mrs_reglas_interseccion_lev_2(), "Interseccion distancia=2 MRs (itemsets unicos)")
+    print_info(mrs_reglas_interseccion_exacta(), "Interseccion exacta MRs [en reglas] (itemsets unicos)")
+    print_info(mrs_reglas_interseccion_lev_1(), "Interseccion distancia=1 MRs [en reglas] (itemsets unicos)")
+    print_info(mrs_reglas_interseccion_lev_2(), "Interseccion distancia=2 MRs [en reglas] (itemsets unicos)")
     print_info(consequents_intersection_lev_1(), "Interseccion distancia=1 Consecuentes (itemsets unicos)")
-    print_info(mrs_txs_interseccion_exacta(), "Interseccion exacta MRs (en TXs)")
-    print_info(mrs_txs_interseccion_lev_1_frecuentes(), "Interseccion distancia=1 MRs (en TXs)")
+    print_info(mrs_txs_interseccion_exacta(), "Interseccion exacta MRs [en TXs]")
+    # print_info(mrs_txs_interseccion_lev_1_frecuentes(), "Interseccion distancia=1 MRs [en TXs]")
+    print_info(mrs_txs_interseccion_lev_1(mrs_unicos_a, mrs_unicos_b), "Interseccion distancia=1 MRs [en TXs]")
