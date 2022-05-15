@@ -41,8 +41,11 @@ class RuleStats(object):
         """ Build the object and connect to the DB """
         super(RuleStats, self).__init__()
         self.filename = filename
-        # self.connection = sqlite3.connect(self.filename)
-        # self.cursor = self.connection.cursor()
+
+        # TODO: Por que estaba comentado esto?
+        self.connection = sqlite3.connect(self.filename)
+        self.cursor = self.connection.cursor()
+
         self.ocurrenceCache = {}
         self.distancesBetweenConsecutiveRepeatsByItem = {}
 
@@ -133,7 +136,7 @@ class RuleStats(object):
         connection = sqlite3.connect(self.filename)
         cursor = connection.cursor()
         res = cursor.execute('''SELECT DISTINCT(item) FROM item''')
-        connection.close()
+        # connection.close() # jonno: Originalmente discomentado
         return res
 
     def ruleIterator(self):
@@ -141,7 +144,7 @@ class RuleStats(object):
         connection = sqlite3.connect(self.filename)
         cursor = connection.cursor()
         res = cursor.execute('''SELECT rule FROM rule''')
-        connection.close()
+        # connection.close() # jonno: Originalmente discomentado
         return res
 
 
