@@ -133,6 +133,13 @@ runStats = function(directory, distanceFile = "distances.txt") {
 # runStats("/home/connor/Escritorio/tesis/src/parse/resultados/experimento17/","distances_not_covered.txt")
 
 # TESTS jonno
+# Para correrlo:
+
+# - Generar protein-rules-NEWAnk.db con el db_generator. Necesario para el rule-visualization
+# - python3 rulegroup/rule_stats.py --filename=protein-rules-NEWAnk.db --mode=distances
+# - mv distances.txt resultados/experimento15/output/jonno_NEWAnk/distances_NEWAnk.txt
+# - correr este script
+
 #runStats("/home/jonno/exactas/tesis/tesis-jonno/tesis-code/main-code/resultados/experimento15/output/jonno_ank/", "distances_jonno_ank.txt")
 #runStats("/home/jonno/exactas/tesis/tesis-jonno/tesis-code/main-code/resultados/experimento15/output/jonno_NEWAnk", "distances_NEWAnk.txt")
 runStats("/home/jonno/exactas/tesis/tesis-jonno/tesis-code/main-code/resultados/experimento15/output/jonno_TPR1_oldrules", "distances_TPR1_old.txt")
