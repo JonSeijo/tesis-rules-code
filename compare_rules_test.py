@@ -28,11 +28,18 @@ class TestRuleComparison(unittest.TestCase):
             cr.rule_from_str("{ALHV,LHIA} => ")
 
     def test_interseccion_base(self) -> None:
-        self.assertEqual([1], cr.list_intersection([1, 2, 3], [1, 4, 5]))
-        self.assertEqual([], cr.list_intersection([1, 2, 3], [4, 5, 6]))
-        self.assertEqual([], cr.list_intersection([1, 2, 3], []))
-        self.assertEqual([], cr.list_intersection([], [4, 5, 6]))
-        self.assertEqual(["hola"], cr.list_intersection(["hola", "como", "estas"], ["hola", "komo", "estaz"]))
+        self.assertEqual([1], cr.generic_list_intersection([1, 2, 3], [1, 4, 5]))
+        self.assertEqual([], cr.generic_list_intersection([1, 2, 3], [4, 5, 6]))
+        self.assertEqual([], cr.generic_list_intersection([1, 2, 3], []))
+        self.assertEqual([], cr.generic_list_intersection([], [4, 5, 6]))
+        self.assertEqual(["hola"], cr.generic_list_intersection(["hola", "como", "estas"], ["hola", "komo", "estaz"]))
+
+    def test_fast_interseccion(self) -> None:
+        self.assertEqual([1], cr.fast_list_intersection([1, 2, 3], [1, 4, 5]))
+        self.assertEqual([], cr.fast_list_intersection([1, 2, 3], [4, 5, 6]))
+        self.assertEqual([], cr.fast_list_intersection([1, 2, 3], []))
+        self.assertEqual([], cr.fast_list_intersection([], [4, 5, 6]))
+        self.assertEqual(["hola"], cr.fast_list_intersection(["hola", "como", "estas"], ["hola", "komo", "estaz"]))
 
     def test_rules_intersection(self) -> None:
         result = cr.rules_intersection_exact(
@@ -138,6 +145,17 @@ class TestRuleComparison(unittest.TestCase):
         result = cr.mrs_txs_interseccion_lev_1({"AAAA", "AAAB"}, {"BAAA", "BAAB"})
         self.assertEqual({"AAAA", "AAAB", "BAAA", "BAAB"}, result)
 
+    def test_all_mrs_from_transactions(self) -> None:
+        result = cr.all_mrs_from_transactions([["AAAA"], ["AAAB", "AAAC"]])
+        self.assertEqual(["AAAA", "AAAB", "AAAC"], result)
+
+    def test_mrs_txs_frecuencia_mayor_set(self) -> None:
+        result = cr.mrs_txs_frecuencia_mayor_set(2, ["A", "A", "A", "B", "B", "C"])
+        self.assertEqual({"A", "B"}, result)
+
+    def test_mrs_txs_frecuencia_mayor_list(self) -> None:
+        result = cr.mrs_txs_frecuencia_mayor_list(2, ["A", "A", "A", "B", "B", "C"])
+        self.assertEqual(["A", "A", "A", "B", "B"], result)
 
 if __name__ == '__main__':
     unittest.main()

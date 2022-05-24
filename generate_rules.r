@@ -54,12 +54,19 @@ outputPath = paste(rulesPath, transactionsName, "_s", support, "_c", confidence,
 rules <- apriori(tx, parameter = list(support=support, confidence=confidence, minlen = 2, maxtime=30))
 write(rules, file = outputPath, sep = ",", quote = TRUE, row.names = FALSE)
 
+# ---------
+# LRR1
 
-# inspect(tx[1:5])
-# itemFrequencyPlot(tx, support = 0.1)
-# itemFrequencyPlot(tx, topN = 20)
-# itemFrequency
+transactionsName = "LRR1_len4_ALL_sub"
+inputPath = paste(transactionsPath, transactionsName, ".csv", sep="")
 
+tx <- read.transactions(inputPath, sep=",")
 
+support = 0.025; # 0.020 -> 10'111 rules
+confidence = 0.9;
+outputPath = paste(rulesPath, transactionsName, "_s", support, "_c", confidence, ".csv", sep="")
+
+rules <- apriori(tx, parameter = list(support=support, confidence=confidence, minlen = 2, maxtime=30))
+write(rules, file = outputPath, sep = ",", quote = TRUE, row.names = FALSE)
 
 

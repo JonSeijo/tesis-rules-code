@@ -20,9 +20,8 @@ def map_str(ls) -> List[str]:
 parser = argparse.ArgumentParser(description='Run tx-generator')
 
 parser.add_argument('family',
-    choices=['ank', 'NEWAnk', 'TPR1'],
     type=str,
-    help='protein family to generate transactions (ank/NEWAnk/TPR1)')
+    help='protein family to generate transactions, for example: ank/NEWAnk/TPR1)')
 
 
 parser.add_argument('--path_db',

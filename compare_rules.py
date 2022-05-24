@@ -94,6 +94,13 @@ def unique_mrs_from_transactions(txs: List[List[str]]) -> Set[str]:
         unique_mrs.update(mrs) # addAll
     return unique_mrs
 
+# Requires hashable elements!
+def fast_list_intersection(
+    collection_a: Iterable[Any], collection_b: Iterable[Any]
+) -> List[Any]:
+    hash_collection_b = set(collection_b)
+    return [ a for a in collection_a if a in hash_collection_b ]
+
 def generic_list_intersection(
     collection_a: Iterable[Any], collection_b: Iterable[Any]
 ) -> List[Any]:
@@ -103,10 +110,6 @@ def generic_set_intersection(
     collection_a: Iterable[Any], collection_b: Iterable[Any]
 ) -> Set[Any]:
     return { a for a in collection_a if a in collection_b }
-
-
-def list_intersection(list_a, list_b):
-    return generic_list_intersection(list_a, list_b)
 
 def rules_intersection_exact(
     rules_a: List[Tuple[Set[str], Set[str]]], 
@@ -201,30 +204,38 @@ def words_with_dist_1(word: str):
             words_dist_1.add(newword)
     return words_dist_1
 
-def mrs_txs_frecuencia_mayor(freq: int, mrs: List[str]) -> Set[str]:
+# Las de frecuencia mayor sin repetidos
+def mrs_txs_frecuencia_mayor_set(freq: int, mrs: List[str]) -> Set[str]:
+    return set(mrs_txs_frecuencia_mayor_list(freq, mrs))
+
+# Esta version incluse TODAS las apariciones de freq mayor
+def mrs_txs_frecuencia_mayor_list(freq: int, mrs: List[str]) -> List[str]:
     counts = dict()
     for mr in mrs:
         counts[mr] = counts.get(mr, 0) + 1
     
-    frecuentes = set()
+    frecuentes = []
     for mr, count in counts.items():
         if count >= freq:
-            frecuentes.add(mr)
+            # Agrego uno por cada aparicion
+            for _ in range(count):
+                frecuentes.append(mr)
     return frecuentes
 
 
-def mrs_txs_interseccion_lev_1_frecuentes() -> Set[str]:
+
+def mrs_txs_interseccion_lev_1_frecuentes(
+    frecuencia_minima: int, mrs_txs_a: List[str], mrs_txs_b: List[str]) -> Set[str]:
     # El problema es que son DEMASIADAS mrs. Tomo las mas frecuentes antes de tomar la interseccion a distancia=1.
     #   Demasiadas commbinaciones posibles sino. 
-    frecuencia_minima = 1000
-    freq_a = mrs_txs_frecuencia_mayor(frecuencia_minima, mrs_txs_a) # TODO: Si lo cambio por unicos, pyre deberia avisarme que algo esta mal...
-    freq_b = mrs_txs_frecuencia_mayor(frecuencia_minima, mrs_txs_b)
+    freq_a = mrs_txs_frecuencia_mayor_set(frecuencia_minima, mrs_txs_a) # TODO: Si lo cambio por unicos, pyre deberia avisarme que algo esta mal...
+    freq_b = mrs_txs_frecuencia_mayor_set(frecuencia_minima, mrs_txs_b)
 
-    print("  ==================================")
-    print(f" -- Frecuencia minima: {frecuencia_minima} - freq_a cant:", len(freq_a))
-    print(f" -- Frecuencia minima: {frecuencia_minima} - freq_b cant:", len(freq_b))
+    # print("  ==================================")
+    # print(f" -- Frecuencia minima: {frecuencia_minima} - freq_a cant:", len(freq_a))
+    # print(f" -- Frecuencia minima: {frecuencia_minima} - freq_b cant:", len(freq_b))
 
-    return iterables_interseccion_lev_dist(1, freq_a, freq_b)
+    return mrs_txs_interseccion_lev_1(1, freq_a, freq_b)
 
 def consequents_intersection_lev_1() -> Set[str]:
     return iterables_interseccion_lev_dist(
@@ -300,5 +311,5 @@ if __name__ == '__main__':
     print_info(mrs_reglas_interseccion_lev_2(), "Interseccion distancia=2 MRs [en reglas] (itemsets unicos)")
     print_info(consequents_intersection_lev_1(), "Interseccion distancia=1 Consecuentes (itemsets unicos)")
     print_info(mrs_txs_interseccion_exacta(), "Interseccion exacta MRs [en TXs]")
-    # print_info(mrs_txs_interseccion_lev_1_frecuentes(), "Interseccion distancia=1 MRs [en TXs]")
+    print_info(mrs_txs_interseccion_lev_1_frecuentes(1000, mrs_txs_a, mrs_txs_b), "Interseccion en frecuentes. distancia=1 MRs [en TXs]")
     print_info(mrs_txs_interseccion_lev_1(mrs_unicos_a, mrs_unicos_b), "Interseccion distancia=1 MRs [en TXs]")
