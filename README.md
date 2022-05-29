@@ -29,7 +29,7 @@
 
 - Limpiar transacciones: `clean_transactions.py`
 
-- Generar reglas: `generate_rules.r`
+- Generar reglas: `generate_rules.r`. Ejemplo: `./generate_rules.r --family=NEWAnk` (quiza necesite previamente `chmod u+x generate_rules.r`)
 
 - Simplificar output reglas: `simplify_rules_format.py`
 
