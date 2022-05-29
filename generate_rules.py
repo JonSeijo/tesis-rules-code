@@ -1,9 +1,15 @@
+import argparse
 import csv
 
 from efficient_apriori import apriori
 
 import pandas as pd
 
+DEFAULT_MIN_SUPPORT = "0.025"
+DEFAULT_MIN_CONFIDENCE = "0.9"
+
+PATH_RULES = "output/pyrules/"
+PATH_TRANSACTIONS = "output/clean_transactions/"
 
 def rules_to_df(rules):
     rules_data = {
@@ -22,48 +28,97 @@ def rules_to_df(rules):
     return pd.DataFrame(rules_data)
 
 
-# TODO: Parametrizar
+def generate(family: str, min_support: str, min_confidence: str, max_length: str, verbosity: str):
 
-family = "NEWAnk"
-min_support = 0.025
-min_confidence = 0.9
+    filename_transactions = f"{PATH_TRANSACTIONS}{family}_len4_ALL_sub.csv"
+    print("Reading transactions from:", filename_transactions)
 
-# PATH_RULES = "output/rules/"
-PATH_RULES = "output/pyrules/"
-PATH_TRANSACTIONS = "output/clean_transactions/"
+    with open(filename_transactions) as file_transactions:
+        transactions = [tx.strip().replace(" ", "").split(",") 
+            for tx in file_transactions.readlines()]
 
-filename_transactions = f"{PATH_TRANSACTIONS}{family}_len4_ALL_sub.csv"
-print("Reading transactions from:", filename_transactions)
+    print("#transactions:", len(transactions))
 
-with open(filename_transactions) as file_transactions:
-    transactions = [tx.strip().replace(" ", "").split(",") 
-        for tx in file_transactions.readlines()]
+    assert len(transactions) > 10000
 
-print("#transactions:", len(transactions))
+    print()
+    print("Running apriori with params:")
+    print(" min_support:    ", min_support)
+    print(" min_confidence: ", min_confidence)
 
-assert len(transactions) > 10000
+    itemsets, rules = apriori(
+        transactions, 
+        min_support=float(min_support), 
+        min_confidence=float(min_confidence),
+        max_length=int(max_length),
+        verbosity=int(verbosity))
 
-print()
-print("Running apriori with params:")
-print(" min_support:    ", min_support)
-print(" min_confidence: ", min_confidence)
+    print()
+    print("Removing rules with multiple consecuents...")
+    rules = [rule for rule in rules if len(rule.rhs)==1]
 
-itemsets, rules = apriori(
-    transactions, min_support=min_support, min_confidence=min_confidence)
+    print()
+    print()
+    print("#rules:", len(rules))
+    print()
+    print("Ready!")
 
-print()
-print("Removing rules with multiple consecuents...")
-rules = [rule for rule in rules if len(rule.rhs)==1]
+    return itemsets, rules
 
-print()
-print()
-print("#rules:", len(rules))
-print()
-print("Ready!")
+def save_to_csv(rules, family, min_support, min_confidence):
+    print("Generating df...")
+    df_rules = rules_to_df(rules)
 
-df_rules = rules_to_df(rules)
+    outname_rules = f"{PATH_RULES}{family}_len4_ALL_sub_s{min_support}_c{min_confidence}.csv" 
 
-outname_rules = f"{PATH_RULES}{family}_len4_ALL_sub_s{min_support}_c{min_confidence}.csv" 
+    print("Writting rules to: ", outname_rules)
+    df_rules.to_csv(outname_rules, index=None, quoting=csv.QUOTE_NONNUMERIC)
 
-print("Writting rules to: ", outname_rules)
-df_rules.to_csv(outname_rules, index=None, quoting=csv.QUOTE_NONNUMERIC)
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description='Generate rules')
+    
+    parser.add_argument('family',
+        type=str,
+        help='Protein family to generate rules. For example: ank/NEWAnk/TPR1/LRR1. Case sensitive!')
+
+
+    parser.add_argument('--min_support',
+        type=str,
+        action='store',
+        help=f'min_support for apriori algorithm (default={DEFAULT_MIN_SUPPORT})',
+        default=DEFAULT_MIN_SUPPORT,
+    )
+
+    parser.add_argument('--min_confidence',
+        type=str,
+        action='store',
+        help=f'min_confidence for apriori algorithm (default={DEFAULT_MIN_CONFIDENCE})',
+        default=DEFAULT_MIN_CONFIDENCE,
+    )
+
+    parser.add_argument('--max_length',
+        type=str,
+        action='store',
+        help=f'max_length for rules/itemsets apriori algorithm (default=8)',
+        default="8",
+    )
+
+    parser.add_argument('--verbosity',
+        type=str,
+        action='store',
+        help=f'verbosity for apriori algorithm [0|1|2] (default=1)',
+        default="1",
+    )
+
+    args = parser.parse_args()
+
+    family = args.family
+    min_support = args.min_support
+    min_confidence = args.min_confidence
+    max_length = args.max_length
+    verbosity = args.verbosity
+
+    itemsets, rules = generate(family, min_support, min_confidence, max_length, verbosity)
+    save_to_csv(rules, family, min_support, min_confidence)

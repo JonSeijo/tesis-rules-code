@@ -53,26 +53,37 @@ def build_rules(filename):
         reverse=True, 
         key=lambda rule: (rule.support, rule.confidence, rule.lift, rule.rule))
 
-filename_rules_r = "output/rules/NEWAnk_len4_ALL_sub_s0.025_c0.9.csv"
-rules_r = build_rules(filename_rules_r)
+def test_output_csv(family, support, confidence):
+    filename_rules = f"{family}_len4_ALL_sub_s{support}_c{confidence}.csv"
 
-filename_rules_py = "output/pyrules/NEWAnk_len4_ALL_sub_s0.025_c0.9.csv"
-rules_py = build_rules(filename_rules_py)
+    filename_rules_r = f"output/rules/{filename_rules}"
+    rules_r = build_rules(filename_rules_r)
 
-assert len(rules_r) == len(rules_py)
+    filename_rules_py = f"output/pyrules/{filename_rules}"
+    rules_py = build_rules(filename_rules_py)
 
-differences = []
-for r, py in zip(rules_r, rules_py):
-    if r != py:
-        differences.append((r, py))
+    # print("     len(rules_r) :", len(rules_r))
+    # print("     len(rules_py):", len(rules_py))
+    assert len(rules_r) == len(rules_py)
 
-if len(differences) == 0:
-    print("ALL OK!!!")
-else:
-    print("#differences: ", len(differences))
-    for r, py in differences:
-        print(r)
-        print(py)
-        print()
+    differences = []
+    for r, py in zip(rules_r, rules_py):
+        if r != py:
+            differences.append((r, py))
 
+    if len(differences) == 0:
+        print(f"{family}: ALL OK!!!")
+    else:
+        print(f"{family}: #differences: ", len(differences))
+        # for r, py in differences:
+        #     print(r)
+        #     print(py)
+        #     print()
+    print()
 
+if __name__ == '__main__':
+    test_output_csv("NEWAnk", 0.025, 0.9)
+    test_output_csv("TPR1", 0.025, 0.9)
+
+    print("LRR1: Problemas!!! En R hay una forma de hacer timeout, que permite que genere reglas de largo 3 sin que explote. En python es todas las de 3 o nada, y necesita infinitos recursos\n")
+    # test_output_csv("LRR1", 0.025, 0.9)
