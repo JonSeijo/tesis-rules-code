@@ -12,7 +12,7 @@ DIR_MAXIMAL_REPEATS_GENERATOR = "maximal-repeats-transactions/"
 PATH_DEFAULT_FAMILY_DATASET = "../db/canonicalFamilyDataset/familyDataset"
 DEFAULT_MIN_LEN = 4
 DEFAULT_MAX_LEN = 999999
-DEFUALT_MIN_PROTEINS = 1
+DEFAULT_MIN_PROTEINS = 1
 
 def map_str(ls) -> List[str]:
     return list(map(str, ls))
@@ -48,7 +48,7 @@ parser.add_argument('--min_proteins',
     type=int,
     action='store',
     help='min protein aparition for maximal repeat (default=1)',
-    default=DEFUALT_MIN_PROTEINS,
+    default=DEFAULT_MIN_PROTEINS,
 )
 
 parser.add_argument('-no_confirmation', action='store_true', help=' flag for continuing without confirmation')
