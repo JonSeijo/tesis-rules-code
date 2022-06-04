@@ -12,9 +12,9 @@ PATH_TRANSACTIONS = "output/clean_transactions/"
 library(optparse)
 
 option_list = list(
-   make_option(c("--family"), 
+   make_option(c("--transactions_name"), 
                action="store", type="character", default=NULL, metavar="character", 
-               help="Family name (ie: NEWAnk/TPR1/LRR1)"), 
+               help="Transactions name (ie: NEWAnk_len4_ALL_sub / TPR1_len5_ALL_sup)"), 
 
    make_option(c("--min_support"), 
                action="store", type="character", default="0.025", metavar="character", 
@@ -33,25 +33,24 @@ opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
 print("---------------------------")
-print(paste("Family:        ", opt$family))
-print(paste("min_support:   ", opt$min_support))
-print(paste("min_confidence:", opt$min_confidence))
-print(paste("max_time:      ", opt$max_time))
+print(paste("transactions_name:", opt$transactions_name))
+print(paste("min_support:      ", opt$min_support))
+print(paste("min_confidence:   ", opt$min_confidence))
+print(paste("max_time:         ", opt$max_time))
 print("---------------------------")
 
-if (is.null(opt$family) || is.null(opt$min_support) || is.null(opt$min_confidence)) {
+if (is.null(opt$transactions_name) || is.null(opt$min_support) || is.null(opt$min_confidence)) {
    stop("ERROR! Empty parameter!")
 }
 
 # ----------
 # Build arguments
 
-familyName = opt$family
+transactionsName = opt$transactions_name
 support = as.double(opt$min_support)
 confidence = as.double(opt$min_confidence)
 maxtime = as.double(opt$max_time)
 
-transactionsName = paste(familyName, "_len4_ALL_sub", sep="")
 inputPath = paste(PATH_TRANSACTIONS, transactionsName, ".csv", sep="")
 outputPath = paste(PATH_RULES, transactionsName, "_s", support, "_c", confidence, ".csv", sep="")
 
@@ -70,10 +69,10 @@ print(paste("Reading transactions from input path: ", inputPath))
 tx <- read.transactions(inputPath, sep=",")
 
 print("Running apriori...")
-print(paste("   familyName: ", familyName))
-print(paste("   support   : ", support))
-print(paste("   confidence: ", confidence))
-print(paste("   maxtime   : ", maxtime))
+print(paste("   transactionsName: ", transactionsName))
+print(paste("   support         : ", support))
+print(paste("   confidence      : ", confidence))
+print(paste("   maxtime         : ", maxtime))
 
 rules <- apriori(tx, parameter = list(support=support, confidence=confidence, minlen = 2, maxtime=maxtime))
 
