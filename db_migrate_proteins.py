@@ -1,27 +1,11 @@
 import os
 
-from utils import list_valid_families
+from utils import list_valid_families, read_db_multiples
 
 from Bio import SeqIO
 
 PATH_DATASETS_MULTIPLE = "../db/canonicalFamilyDataset/familyDataset"
 PATH_DATASETS_SINGLE = "output/family_datasets"
-
-def read_db_multiples(family_name):
-    path_input = os.path.join(PATH_DATASETS_MULTIPLE, family_name)
-    proteins = []
-
-    curr_amount = 0
-    for filename_protein in os.listdir(path_input):
-        curr_amount += 1
-        if curr_amount % 1000 == 0:
-            print(f"Reading proteins from {path_input}: {curr_amount}")
-
-        path_protein = os.path.join(path_input, filename_protein)
-        protein = SeqIO.read(path_protein, "fasta")  # read -> the one and only protein
-        proteins.append(protein)
-    return proteins
-
 
 def write_db_single(proteins, family_name):
     filename_out = f"{PATH_DATASETS_SINGLE}/{family_name}.fasta"
@@ -31,7 +15,7 @@ def write_db_single(proteins, family_name):
 
 # "NEWAnk"
 def migrate_dataset(family_name):
-    proteins = read_db_multiples(family_name)
+    proteins = read_db_multiples(family_name, PATH_DATASETS_MULTIPLE)
     write_db_single(proteins, family_name)
 
 if __name__ == '__main__':
