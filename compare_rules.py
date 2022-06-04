@@ -235,7 +235,7 @@ def mrs_txs_interseccion_lev_1_frecuentes(
     # print(f" -- Frecuencia minima: {frecuencia_minima} - freq_a cant:", len(freq_a))
     # print(f" -- Frecuencia minima: {frecuencia_minima} - freq_b cant:", len(freq_b))
 
-    return mrs_txs_interseccion_lev_1(1, freq_a, freq_b)
+    return mrs_txs_interseccion_lev_1(freq_a, freq_b)
 
 def consequents_intersection_lev_1() -> Set[str]:
     return iterables_interseccion_lev_dist(
@@ -261,33 +261,54 @@ def antecedents_interseccion_lev_dist(
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run rules comparison')
 
-    # parser.add_argument('path_rules_a',
-    #     type=pathlib.Path,
-    #     action='store',
-    #     help='relative path to rules_a')
+    parser.add_argument('--family_a',
+        type=str,
+        action='store',
+        required=True,
+        help='Name of family_a, transaction prefix (NEWAnk_len4_ALL_sub || TPR1_len4_ALL_sub)')
 
-    # parser.add_argument('path_rules_b',
-    #     type=pathlib.Path,
-    #     action='store',
-    #     help='relative path to rules_b')
+    parser.add_argument('--family_b',
+        type=str,
+        action='store',
+        required=True,
+        help='Name of family_b, transaction prefix (NEWAnk_len4_ALL_sub || TPR1_len4_ALL_sub)')
 
-    # args: argparse.Namespace = parser.parse_args()
-    # path_rules_a = str(args.path_rules_a)
-    # path_rules_b = str(args.path_rules_b)
+    parser.add_argument('--support',
+        type=str,
+        action='store',
+        help='support used in rule generation. [default=0.025]',
+        default="0.025")
+
+    parser.add_argument('--confidence',
+        type=str,
+        action='store',
+        help='confidence used in rule generation. [default=0.9]',
+        default="0.9")
+
+    args: argparse.Namespace = parser.parse_args()
+    family_a = str(args.family_a)
+    family_b = str(args.family_b)
+    support = str(args.support)
+    confidence = str(args.confidence)
 
     """
+    Original comparison:
+
     output/rules/NEWAnk_len4_ALL_sub_s0.025_c0.9.csv
     output/rules/TPR1_len4_ALL_sub_s0.015_c0.75.csv
     """
+    # family_a = "NEWAnk_len4_ALL_sub"
+    # family_b = "TPR1_len4_ALL_sub"
 
-    # TODO: Parametrizar family, support y confidence
-    family_a = "NEWAnk_len4_ALL_sub"
+
+    # TODO: Permitir parametrizar support y conf distintos para ambas familiar
+    #   Quiza parametrizar solo el rule filename y obtener las txs del prefijo
+
     path_mr_a = f"output/clean_transactions/{family_a}.csv"
-    path_rules_a = f"output/rules/{family_a}_s0.025_c0.9.csv"
+    path_rules_a = f"output/rules/{family_a}_s{support}_c{confidence}.csv"
     
-    family_b = "TPR1_len4_ALL_sub"
     path_mr_b = f"output/clean_transactions/{family_b}.csv"
-    path_rules_b = f"output/rules/{family_b}_s0.015_c0.75.csv"
+    path_rules_b = f"output/rules/{family_b}_s{support}_c{confidence}.csv"
 
     df_a = pd.read_csv(path_rules_a)
     df_b = pd.read_csv(path_rules_b)
@@ -303,7 +324,7 @@ if __name__ == '__main__':
 
     print_header()
     print_mrs_info()
-    print_info(interseccion_exacta(), "Interseccion exacta")
+    print_info(interseccion_exacta(), "Interseccion exacta reglas")
     print_info(interseccion_exacta_antecedentes(), "Interseccion exacta antecedentes")
     print_info(interseccion_exacta_consecuentes(), "Interseccion exacta consecuentes")
     print_info(mrs_reglas_interseccion_exacta(), "Interseccion exacta MRs [en reglas] (itemsets unicos)")
