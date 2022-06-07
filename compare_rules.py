@@ -2,7 +2,7 @@ import argparse
 import nltk
 import pathlib
 import pandas as pd
-from typing import Sized, Any, Iterable, List, Tuple, Set, TypeVar
+from typing import Sized, Any, Dict, Iterable, List, Tuple, Set, TypeVar
 
 class RuleBuildException(Exception):
     pass
@@ -208,11 +208,15 @@ def words_with_dist_1(word: str):
 def mrs_txs_frecuencia_mayor_set(freq: int, mrs: List[str]) -> Set[str]:
     return set(mrs_txs_frecuencia_mayor_list(freq, mrs))
 
-# Esta version incluse TODAS las apariciones de freq mayor
-def mrs_txs_frecuencia_mayor_list(freq: int, mrs: List[str]) -> List[str]:
+def mrs_frequency_map_from_mrs(mrs: List[str]) -> Dict[str, int]:
     counts = dict()
     for mr in mrs:
         counts[mr] = counts.get(mr, 0) + 1
+    return counts
+
+# Esta version incluse TODAS las apariciones de freq mayor
+def mrs_txs_frecuencia_mayor_list(freq: int, mrs: List[str]) -> List[str]:
+    counts = mrs_frequency_map_from_mrs(mrs)
     
     frecuentes = []
     for mr, count in counts.items():

@@ -6,7 +6,7 @@ from typing import List
 
 def exp_0_intersection(
     family_a_name: str, mrs_a: List[str], family_b_name: str, mrs_b: List[str]
-) -> List[str]:
+) -> None:
     """
     A partir de una lista con todos los MRs de una familia, con repetidos!
     Calculo la interseccion

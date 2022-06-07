@@ -157,5 +157,11 @@ class TestRuleComparison(unittest.TestCase):
         result = cr.mrs_txs_frecuencia_mayor_list(2, ["A", "A", "A", "B", "B", "C"])
         self.assertEqual(["A", "A", "A", "B", "B"], result)
 
+    def test_mrs_frequency_map_from_mrs(self) -> None:
+        mrs = ["A", "A", "B", "C", "B", "A"]
+        result = cr.mrs_frequency_map_from_mrs(mrs)
+        self.assertEqual({"A": 3, "B": 2, "C": 1}, result)
+
+
 if __name__ == '__main__':
     unittest.main()
