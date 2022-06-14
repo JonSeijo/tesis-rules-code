@@ -4,40 +4,7 @@ import pathlib
 import pandas as pd
 from typing import Sized, Any, Dict, Iterable, List, Tuple, Set, TypeVar
 
-class RuleBuildException(Exception):
-    pass
-
-# s = {GNTA,HLAA,NTAL,PLHL,TPLH}
-def build_itemset(s: str) -> Set[str]:
-    if len(s) <= 2 or s[0] != "{" or s[-1] != "}":
-        raise RuleBuildException()
-
-    s = s[1:-1]
-    ls = s.split(",")
-    return set(ls)
-
-
-# "{ALHV,LHIA} => {LHVA}"  ----> ({ALHV,LHIA}, {LHVA})
-def rule_from_str(rule_str: str) -> Tuple[Set[str], Set[str]]:
-    if " => " not in rule_str:
-        raise RuleBuildException()
-    
-    splitted = rule_str.split(" => ")
-
-    if len(splitted) != 2:
-        raise RuleBuildException()
-
-    left, right = splitted
-
-    if len(left) == 0 or len(right) == 0:
-        raise RuleBuildException()
-
-    return build_itemset(left), build_itemset(right)
-
-
-def build_rule_list_from_df(df_rules) -> List[Tuple[Set[str], Set[str]]]:
-    return [rule_from_str(rule[0]) for idx, rule in df_rules[["rules"]].iterrows()]
-
+from info_rules import build_rule_list_from_df, all_mrs_from_path, antecedents, consequents, itemset
 
 def print_header() -> None:
     print("============================")
@@ -71,28 +38,6 @@ def print_info(intersection: Sized, title) -> None:
     print("#intersection:", len(intersection))
     print()
 
-def all_mrs_from_path(filepath: str) -> List[str]:
-    with open(filepath) as mr_file:
-        transactions = [tx.strip().replace(" ", "").split(",") for tx in mr_file.readlines()]
-        return all_mrs_from_transactions(transactions)
-    raise Exception("Error reading transactions from", filepath)
-
-def unique_mrs_from_path(filepath: str) -> Set[str]:
-    unique_mrs = set()
-    with open(filepath) as mr_file:
-        transactions = [tx.strip().replace(" ", "").split(",") for tx in mr_file.readlines()]
-        return unique_mrs_from_transactions(transactions)
-    return unique_mrs
-
-def all_mrs_from_transactions(txs: List[List[str]]) -> List[str]:
-    return [mr for tx in txs for mr in tx]
-
-def unique_mrs_from_transactions(txs: List[List[str]]) -> Set[str]:
-    unique_mrs = set()
-    for tx in txs:
-        mrs = tx
-        unique_mrs.update(mrs) # addAll
-    return unique_mrs
 
 # Requires hashable elements!
 def fast_list_intersection(
@@ -124,26 +69,6 @@ def sets_intersection_exact(set_a: List[Set[str]], set_b: List[Set[str]]) -> Lis
 def itemsets_intersection_exact(itemsets_a: Set[str], itemsets_b: Set[str]) -> Set[str]:
     return generic_set_intersection(itemsets_a, itemsets_b)
 
-def antecedents(
-    rules: List[Tuple[Set[str], Set[str]]]
-) -> List[Set[str]]:
-    return [ rule[0] for rule in rules ]
-
-def consequents(
-    rules: List[Tuple[Set[str], Set[str]]]
-) -> List[str]:
-    return [ next(iter(rule[1])) for rule in rules ]
-
-def itemset(
-    rules: List[Tuple[Set[str], Set[str]]]
-) -> Set[str]:
-    all_itemsets = set()
-    for rule in rules:
-        for itemset in rule[0]:  # Antecedent
-            all_itemsets.add(itemset)
-        for itemset in rule[1]:  # Consequent
-            all_itemsets.add(itemset)
-    return all_itemsets
 
 def interseccion_exacta() -> List[Tuple[Set[str], Set[str]]]:
     return rules_intersection_exact(rules_a, rules_b)
@@ -246,22 +171,6 @@ def consequents_intersection_lev_1() -> Set[str]:
         1, consequents(rules_a), consequents(rules_b))
 
 
-# TODO: Pensar como sería una comparacion de antecedentes??
-def antecedents_interseccion_lev_dist(
-    dist: int, 
-    antecedents_a: List[Set[str]], 
-    antecedents_b: List[Set[str]]
-) -> List[Set[str]]:
-    
-    # Quiero ver si existe antecedent en A tq antecedent en B esta a dist <= 1
-    for ant_a in antecedents_a:
-        for ant_b in antecedents_b:
-            pass
-            # ant_a y ant_b son sets! de items
-            # ¿que significa que dos SETS esten a distancia <= 1?
-
-    return []
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run rules comparison')
 
@@ -337,4 +246,6 @@ if __name__ == '__main__':
     print_info(consequents_intersection_lev_1(), "Interseccion distancia=1 Consecuentes (itemsets unicos)")
     print_info(mrs_txs_interseccion_exacta(), "Interseccion exacta MRs [en TXs]")
     print_info(mrs_txs_interseccion_lev_1_frecuentes(1000, mrs_txs_a, mrs_txs_b), "Interseccion en frecuentes. distancia=1 MRs [en TXs]")
-    print_info(mrs_txs_interseccion_lev_1(mrs_unicos_a, mrs_unicos_b), "Interseccion distancia=1 MRs [en TXs]")
+    
+    # Lento, todas las intersecciones a dist=1
+    # print_info(mrs_txs_interseccion_lev_1(mrs_unicos_a, mrs_unicos_b), "Interseccion distancia=1 MRs [en TXs]")

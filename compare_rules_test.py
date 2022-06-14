@@ -3,29 +3,10 @@ import pathlib
 import pandas as pd
 
 import compare_rules as cr
+import info_rules as ir
+
 
 class TestRuleComparison(unittest.TestCase):
-
-    def test_build_itemset(self) -> None:
-        result = cr.build_itemset("{GNTA,HLAA,NTAL,PLHL}")
-        expected = set(["GNTA", "HLAA", "NTAL", "PLHL"])
-        self.assertEqual(expected, result)
-
-        with self.assertRaises(cr.RuleBuildException):
-            cr.build_itemset("GNTA,HLAA,NTAL,PLHL")
-
-
-    def test_rule_from_str(self) -> None:
-        # "{ALHV,LHIA} => {LHVA}"  ----> ({ALHV,LHIA}, {LHVA})
-        result = cr.rule_from_str("{ALHV,LHIA} => {LHVA}")
-        expected = (set(["ALHV", "LHIA"]), set(["LHVA"]))
-        self.assertEqual(expected, result)
-
-        with self.assertRaises(cr.RuleBuildException):
-            cr.rule_from_str("{ALHV,LHIA},{LHVA}")
-
-        with self.assertRaises(cr.RuleBuildException):
-            cr.rule_from_str("{ALHV,LHIA} => ")
 
     def test_interseccion_base(self) -> None:
         self.assertEqual([1], cr.generic_list_intersection([1, 2, 3], [1, 4, 5]))
@@ -43,42 +24,16 @@ class TestRuleComparison(unittest.TestCase):
 
     def test_rules_intersection(self) -> None:
         result = cr.rules_intersection_exact(
-            [   cr.rule_from_str("{HOLA,COMO} => {ESTA}"),
-                cr.rule_from_str("{ESTO,NOOO} => {ESTA}")],
+            [   ir.rule_from_str("{HOLA,COMO} => {ESTA}"),
+                ir.rule_from_str("{ESTO,NOOO} => {ESTA}")],
 
-            [   cr.rule_from_str("{COMO,HOLA} => {ESTA}")])
+            [   ir.rule_from_str("{COMO,HOLA} => {ESTA}")])
 
         # No importa el orden, la regla debe ser la misma en el build
-        expected_1 = [cr.rule_from_str("{HOLA,COMO} => {ESTA}")]
-        expected_2 = [cr.rule_from_str("{COMO,HOLA} => {ESTA}")]
+        expected_1 = [ir.rule_from_str("{HOLA,COMO} => {ESTA}")]
+        expected_2 = [ir.rule_from_str("{COMO,HOLA} => {ESTA}")]
         self.assertEqual(expected_1, result)
         self.assertEqual(expected_2, result)
-
-    def test_antecedents(self) -> None:
-        result = cr.antecedents([
-           cr.rule_from_str("{HOLA,TODO} => {BIEN}"),
-           cr.rule_from_str("{TEST} => {ASDF}") 
-        ])
-        expected = [{"HOLA", "TODO"}, {"TEST"}]
-        self.assertEqual(expected, result)
-
-    def test_consequents(self) -> None:
-        result = cr.consequents([
-           cr.rule_from_str("{HOLA,TODO} => {BIEN}"),
-           cr.rule_from_str("{TEST} => {ASDF}") 
-        ])
-        # expected = [{"BIEN"}, {"ASDF"}]  old version
-        expected = ["BIEN", "ASDF"]
-        self.assertEqual(expected, result)
-
-    def test_itemsets(self) -> None:
-        result = cr.itemset([
-           cr.rule_from_str("{HOLA,TODO} => {BIEN}"),
-           cr.rule_from_str("{TODO} => {BIEN}"),
-           cr.rule_from_str("{TEST} => {ASDF}") 
-        ])
-        expected = {"HOLA", "TODO", "BIEN", "TEST", "ASDF"}
-        self.assertEqual(expected, result)
 
     def test_sets_intersection_exact(self) -> None:
         result = cr.sets_intersection_exact(
@@ -144,10 +99,6 @@ class TestRuleComparison(unittest.TestCase):
 
         result = cr.mrs_txs_interseccion_lev_1({"AAAA", "AAAB"}, {"BAAA", "BAAB"})
         self.assertEqual({"AAAA", "AAAB", "BAAA", "BAAB"}, result)
-
-    def test_all_mrs_from_transactions(self) -> None:
-        result = cr.all_mrs_from_transactions([["AAAA"], ["AAAB", "AAAC"]])
-        self.assertEqual(["AAAA", "AAAB", "AAAC"], result)
 
     def test_mrs_txs_frecuencia_mayor_set(self) -> None:
         result = cr.mrs_txs_frecuencia_mayor_set(2, ["A", "A", "A", "B", "B", "C"])

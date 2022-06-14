@@ -1,6 +1,7 @@
 import analysis_utils as autils
 
-from compare_rules import fast_list_intersection, all_mrs_from_transactions
+from compare_rules import fast_list_intersection
+from info_rules import all_mrs_from_transactions
 
 from typing import List
 

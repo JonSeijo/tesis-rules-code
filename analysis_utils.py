@@ -1,8 +1,10 @@
 # transactions_analysis.py
 import os
+from collections import defaultdict
 from typing import Dict, List, Set
 
 import pandas as pd
+
 
 # TODO: Testing. Dividir construccion de dict de dataframe.
 
@@ -53,6 +55,7 @@ def build_mr_tx_frequency_df(
             mrs_freq_data["family"].append(family)
             mrs_freq_data["freq_percentage"].append(freq / len(transactions))
 
+    print("Finished")
     return pd.DataFrame(mrs_freq_data) 
 
 
@@ -101,25 +104,27 @@ def build_pairs_mr_tx_frequency_df(
         
     return pd.DataFrame(freq_by_pair_data)
 
-
 def get_freqs_by_pair_combinations(mrs, transactions): 
     print("Filtering transactions_frequents")
     # Me quedo solo con los items frecuentes de las transacciones,
     #  porque no tiene sentido iterar por los no-frecuentes
     transactions_frequents = get_transactions_with_frequents(mrs, transactions)
 
-    freq_by_pair = {}
+    # freq_by_pair = {}
+    freq_by_pair = defaultdict(int)
+
     for t_index, tx in enumerate(transactions_frequents):
         if t_index % 10000 == 0:
             print(f" .... {t_index}/{len(transactions_frequents)}")
 
         for i in range(len(tx)):
+            item_a = tx[i]
             for j in range(i+1, len(tx)):
-                item_a = tx[i]
                 item_b = tx[j]
-                key = item_a + "_" + item_b
+                # key = item_a + "_" + item_b
+
                 # Solo cuento el orden (a,b) porque las tx vienen ordenadas!
-                freq_by_pair[key] = freq_by_pair.get(key, 0) + 1
+                freq_by_pair[item_a + "_" + item_b] += 1
     return freq_by_pair
                 
 # Para que me de la complejidad, primero elimino de las transacciones los elementos que no superan el minsupport
