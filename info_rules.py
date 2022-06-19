@@ -1,6 +1,12 @@
 import pandas as pd
 from typing import Sized, Any, Dict, Iterable, List, Tuple, Set, TypeVar
 
+# TODO: Use pre-exisiting classes for rules
+# TODO: Rename module so it doesn't use -
+import importlib
+rg = importlib.import_module("main-code.rulegroup.rulegroup")
+
+
 
 def antecedents(
     rules: List[Tuple[Set[str], Set[str]]]
@@ -67,6 +73,21 @@ def build_itemset(s: str) -> Set[str]:
 class RuleBuildException(Exception):
     pass
 
+def get_ruletypes(rules_str: List[str]) -> Dict[str, str]:
+    ruletypes = {}
+    for rule_str in rules_str:
+        rule = rg.Rule(rule_str)
+        rtype = rule.getRuleTypeText()
+        ruletypes[rule_str] = rtype
+    return ruletypes
+
+def ruletypes_with(substr: str, ruletypes_by_rule: Dict[str, str]) -> List[str]:
+    matching = []
+    for rule, rtype in ruletypes_by_rule.items():
+        if substr in rtype:
+            matching.append((rule, rtype))
+    return matching
+
 def build_info_rules_for(family, min_len, mr_type, min_support, min_confidence):
     print(f"build_info_rules_for({family}, {min_len}, {mr_type}, {min_support}, {min_confidence})")
 
@@ -81,15 +102,30 @@ def build_info_rules_for(family, min_len, mr_type, min_support, min_confidence):
     info_rules["path_transactions"] = f"output/clean_transactions/{family}_{min_len}_{mr_type}.csv"
     info_rules["path_rules"] = f"output/rules/{family}_{min_len}_{mr_type}_s{min_support}_c{min_confidence}.csv"
 
+    print("Reading rules file...")
     df_rules = pd.read_csv(info_rules["path_rules"])
+
+    print("Building rules from file...")
     rules = build_rule_list_from_df(df_rules)
 
+    print("Calculating rules stats...")
     info_rules["rules_amount"] = len(rules)
     info_rules["rules_unique_items"] = len(set(itemset(rules)))
     info_rules["rules_unique_antecedents"] = len(set(antecedents(rules)))
     info_rules["rules_unique_consecuents"] = len(set(consequents(rules)))
 
+    print("Classifying rules...")
+    ruletypes_by_rule = get_ruletypes(list(df_rules["rules"]))
+    info_rules["rules_type_add"] = len(ruletypes_with("Agrega", ruletypes_by_rule))
+    info_rules["rules_type_overlap"] = len(ruletypes_with("Overlap", ruletypes_by_rule))
+    info_rules["rules_type_n/a"] = len(ruletypes_with("N/A", ruletypes_by_rule))
+
+    # for rt in ruletypes_with("Agrega", ruletypes_by_rule):
+    #     print(rt)
+
+    print("Reading transactions file...")
     transactions = transactions_from_path(info_rules["path_transactions"])
+    print("Calculating transactions stats...")
     txs_items = all_mrs_from_transactions(transactions)
 
     info_rules["txs_amount"] = len(transactions)
@@ -111,3 +147,6 @@ if __name__ == '__main__':
 
     for k, v in info_rules.items():
         print(f"{k}: {v}")
+
+
+

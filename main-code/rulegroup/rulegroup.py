@@ -11,13 +11,17 @@ from pathlib import Path
 class RuleGroupParser(object):
     """ Reads a file and process the rules in it according to the Rule's classification algorithms """
 
-    def __init__(self, input, output):
+    def __init__(self, filename_input, filename_output):
         """ Creates an instance of the class for reading and writing the corresponding files """
-        self.input = input
-        self.output = output
+        self.input = filename_input
+        self.output = filename_output
 
+    # TODO: Create parser that can handle rule_generator csv output directly
     def process(self):
-        """ Open and process the file line by line in order to classify the rules acording to the Rule's own criteria """
+        """ 
+        Needs preprocessing, doesn't use rule_generator csv output.
+        Open and process the file line by line in order to classify the rules acording to the Rule's own criteria 
+        """
         separator = ";"
         outfile = open(self.output, 'w')
 
@@ -126,6 +130,15 @@ class Rule(object):
             return self.ADDS_INFO
         else:
             return self.OTHER
+
+    def getRuleTypeText(self):
+        """ Get rule text according to the classification proposed """
+        if self.addsInfo():  # TODO: Redundante, calcula el added info dos veces
+            return "Agrega +"+self.addedInfo()
+        elif self.isOverlapping():
+            return "Overlapping"
+        else:
+            return "N/A"
 
 class ClusterRule(object):
     """ Models a clusterized version of the rule in which each part is searcheable
