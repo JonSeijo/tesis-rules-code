@@ -32,6 +32,7 @@ def create_tables(connection):
         rule_type TEXT,
         rule_type_simple TEXT,
         rule_size INTEGER,
+        count INTEGER,
         support REAL,
         confidence REAL,
         lift REAL,
@@ -84,15 +85,16 @@ def insert_rules(connection, rules_df, metadata_id):
     for index, rr in rules_df.iterrows():
 
         rule_to_insert = (
-            'TODO_rule',
-            'TODO_antecedent',
+            rr['rules'],
+            rr['antecedent'],
             rr['consequent'],
             rr['ruletype'],
             rr['ruletype_simple'],
-            'TODO_rulesize',
-            'TODO_support',
-            'TODO_confidence',
-            'TODO_lift',
+            rr['rule_size'],
+            rr['count'],
+            rr['support'],
+            rr['confidence'],
+            rr['lift'],
             metadata_id
         )
 
@@ -104,11 +106,12 @@ def insert_rules(connection, rules_df, metadata_id):
                 rule_type,
                 rule_type_simple,
                 rule_size,
+                count,
                 support,
                 confidence,
                 lift,
                 id_rule_metadata)
-            VALUES (?,?,?,?,?,?,?,?,?,?)''', rule_to_insert)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?)''', rule_to_insert)
 
     connection.commit()
 

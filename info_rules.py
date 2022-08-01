@@ -98,7 +98,13 @@ def build_df_rules_from_path(path: str) -> pd.DataFrame:
 
     rules = [ rg.Rule(rule_str) for rule_str in list(df_rules["rules"])]
 
+
+    # print(df_rules.columns)
+    # Already in index: ['rules', 'support', 'confidence', 'coverage', 'lift', 'count']
+
+    df_rules["antecedent"] = [ ','.join(sorted(rule.antecedent)) for rule in rules ]
     df_rules["consequent"] = [ rule.consequent for rule in rules ]
+
     df_rules["rule_size"] = [ 1 + len(rule.antecedent) for rule in rules ]
 
     print("Classifying rules...")
