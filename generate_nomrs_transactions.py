@@ -35,7 +35,7 @@ parser.add_argument('--path_db',
     help='relative path to familyDataset db',
     default=PATH_DEFAULT_FAMILY_DATASET)
 
-parser.add_argument('--len',
+parser.add_argument('--min_len',
     type=int,
     action='store',
     help='length for substring (default=4)',
@@ -53,7 +53,7 @@ family = args.family
 path_family_db = str(args.path_db)
 assert(path_family_db[-1] != "/")
 
-substring_len = int(args.len)
+substring_len = int(args.min_len)
 
 ask_confirmation: bool = not args.no_confirmation
 
@@ -93,7 +93,6 @@ def unique_substrings_with_len(protein_str: str, expected_len: int) -> List[str]
 # Leer proteinas de los .fasta
 proteins = read_db_multiples(family, path_family_db)
 
-# TODO: Paralelizar? Cuando tarda esto?
 txs = []
 for ip, protein in enumerate(proteins):
     if (ip % 1000 == 0):

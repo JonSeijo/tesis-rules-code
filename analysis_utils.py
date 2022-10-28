@@ -104,6 +104,7 @@ def build_pairs_mr_tx_frequency_df(
         
     return pd.DataFrame(freq_by_pair_data)
 
+# mrs: deberian ser los items frecuentes para que tenga sentido la optimizacion
 def get_freqs_by_pair_combinations(mrs, transactions): 
     print("Filtering transactions_frequents")
     # Me quedo solo con los items frecuentes de las transacciones,
