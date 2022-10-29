@@ -14,22 +14,17 @@ TxmbaCleaner::TxmbaCleaner(const TxmbaCleaner& other)
 /**
  * Creates a new instance of the class
  * @param string inputFile the file where to read the transactions to be cleaned
- * @param CleanMode cleanMode whether to clean for inclusion or exclusion
  * @param string outputFilename where to store the cleaned output
  */
-TxmbaCleaner::TxmbaCleaner(const string &inputFile, CleanMode cleanMode, const string &outputFilename)
-{
+TxmbaCleaner::TxmbaCleaner(const string &inputFile, const string &outputFilename) {
 	this->inputFilename = inputFile;
     this->outputFile.open(outputFilename);
-    this->cleanMode = cleanMode;
 }
-
 
 /**
  * Process each line of the file and clean it
  */
-void TxmbaCleaner::cleanLines()
-{
+void TxmbaCleaner::cleanLines(CleanMode cleanMode) {
     int txsCleaned = 0;
 
     std::ifstream infile(this->inputFilename.c_str(), std::ifstream::in);
@@ -40,7 +35,7 @@ void TxmbaCleaner::cleanLines()
     int length = infile.tellg();
     infile.seekg (0, infile.beg);
 
-    if(length > 0) {
+    if (length > 0) {
         while (std::getline(infile, line)) {
             txsCleaned++;
             if (txsCleaned % 1000 == 0) {
@@ -74,77 +69,68 @@ string TxmbaCleaner::cleanLine(CleanMode cleanMode, string &line) {
     }
 }
 
-/**
- * Clean the current line with a specific criteria
- * @param string line
- */
-string TxmbaCleaner::cleanInclusion(string line)
-{
-    vector<string> aux;
-    boost::split(aux, line, boost::is_any_of(","));
-    vector< pair<string, bool> > results(aux.size());
-    for(auto& a: aux) {
-        results.emplace_back(pair<string, bool>(a, true));
-    }
+bool contains(const string &haystack, const string &needle) {
+    return haystack.find(needle) != std::string::npos;
+}
 
-    for (vector<pair<string, bool> >::iterator it = results.begin() ; it != results.end(); ++it) {
-        for (vector<pair<string, bool>>::iterator comp = results.begin() ; comp != results.end();) {
-            if(&(*it).first != &(*comp).first && (*comp).second != false) {
-                if((*it).first.find((*comp).first) != string::npos) {
-                    (*comp).second = false;
-                }
-            }
-            ++comp;
-        }
-    }
-
-    list<string> res;
-    for (vector<pair<string, bool> >::iterator it = results.begin() ; it != results.end(); ++it) {
-        if((*it).second) {
-            res.emplace_back((*it).first);
-        }
-    }
-    
+string TxmbaCleaner::cleanInclusion(const string &itemsLine) {
+    vector<string> items = buildItems(itemsLine);
+    list<string> res = filterItemsWithMode(items, false);
     return boost::algorithm::join(res, ",");
 }
 
-/**
- * Clean the current line with a specific criteria
- * @param string line
- */
-string TxmbaCleaner::cleanExclusion(string line)
-{
-    vector<string> aux;
-    boost::split(aux, line, boost::is_any_of(","));
-    vector< pair<string, bool> > results(aux.size());
-    for(auto& a: aux) {
-        results.emplace_back(pair<string, bool>(a, true));
-    }
+string TxmbaCleaner::cleanExclusion(const string &itemsLine) {
+    vector<string> items = buildItems(itemsLine);
+    list<string> res = filterItemsWithMode(items, true);
+    return boost::algorithm::join(res, ",");
+}
 
-    for (vector<pair<string, bool> >::iterator it = results.begin() ; it != results.end(); ++it) {
-        if((*it).second != false) {
-            for (vector<pair<string, bool>>::iterator comp = results.begin() ; comp != results.end();) {
-                if(&(*it).first != &(*comp).first && (*comp).second != false) {
-                    if((*it).first.find((*comp).first) != string::npos) {
-                        (*it).second = false;
+// TODO: Sigue siendo horrible
+list<string> TxmbaCleaner::filterItemsWithMode(const vector<string> &items, bool removeContained) {
+    vector<pair<string, bool>> results = buildItemsWithPresentStatus(items);
+    for (auto &result : results) {
+        if (result.second) {
+            for (auto &comp : results) {
+                if (&result.first != &comp.first && comp.second) {
+                    if (contains(result.first, comp.first)) {
+                        if (removeContained) {
+                            result.second = false;
+                        } else {
+                            comp.second = false;
+                        }
                     }
                 }
-                ++comp;
             }
         }
     }
-
-    list<string> res;
-    for (vector<pair<string, bool> >::iterator it = results.begin() ; it != results.end(); ++it) {
-        if((*it).second) {
-            res.emplace_back((*it).first);
-        }
-    }
-    
-    return boost::algorithm::join(res, ",");
+    return getItemsPresent(results);
 }
 
-string TxmbaCleaner::cleanMinimum(string line) {
+vector<string> TxmbaCleaner::buildItems(const string &itemsLine) {
+    vector<string> items;
+    boost::split(items, itemsLine, boost::is_any_of(","));
+    return items;
+}
+
+vector<pair<string, bool>> TxmbaCleaner::buildItemsWithPresentStatus(const vector<string> &items) {
+    vector< pair<string, bool> > results(items.size());
+    for(auto& elem: items) {
+        results.emplace_back(pair<string, bool>(elem, true));
+    }
+    return results;
+}
+
+list<string> TxmbaCleaner::getItemsPresent(vector<pair<string, bool>>& results) {
+    list<string> res;
+    for (auto & result : results) {
+        if (result.second) {
+            res.emplace_back(result.first);
+        }
+    }
+    return res;
+}
+
+string TxmbaCleaner::cleanMinimum(const string &line) {
     assert(0 && "Not implemented!");
 }
 

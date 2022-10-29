@@ -8,6 +8,7 @@ rulegroup/__pycache__
 out_parse_rules_*
 
 # Executables
+b
 cleaner
 rule_parse_app
 ccf

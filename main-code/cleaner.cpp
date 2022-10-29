@@ -31,8 +31,8 @@ int main(int argc, char* argv[])
     }
 
     auto cleanMode = static_cast<CleanMode>(mode);
-    TxmbaCleaner cleaner = TxmbaCleaner(input, cleanMode, output);
-    cleaner.cleanLines();
+    TxmbaCleaner cleaner = TxmbaCleaner(input, output);
+    cleaner.cleanLines(cleanMode);
 
     return EXIT_SUCCESS;
 }

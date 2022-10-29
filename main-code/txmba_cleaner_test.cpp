@@ -44,7 +44,7 @@ class TxmbaCleanerTest : public CppUnit::TestFixture
 
         void testCleanLineInclusion1()
         {
-            TxmbaCleaner cleaner = TxmbaCleaner("a", CleanMode::superstring, "b");
+            TxmbaCleaner cleaner = TxmbaCleaner("a", "b");
             CPPUNIT_ASSERT_EQUAL(string("AAA"), cleaner.cleanInclusion("AAA,AA"));
             CPPUNIT_ASSERT_EQUAL(string("AAA"), cleaner.cleanInclusion("AA,AAA"));
             CPPUNIT_ASSERT_EQUAL(string("AAA,B"), cleaner.cleanInclusion("AA,AAA,B"));
@@ -60,7 +60,7 @@ class TxmbaCleanerTest : public CppUnit::TestFixture
 
         void testCleanLineInclusion2()
         {
-            TxmbaCleaner cleaner = TxmbaCleaner("a", CleanMode::superstring,"b");
+            TxmbaCleaner cleaner = TxmbaCleaner("a", "b");
             CPPUNIT_ASSERT_EQUAL(string("QQGH,TPLH"), cleaner.cleanInclusion("QQGH,TPLH"));
             CPPUNIT_ASSERT_EQUAL(string("TTTTT"), cleaner.cleanInclusion("TTTTT,TTTT"));
             CPPUNIT_ASSERT_EQUAL(string("GFTPLHIA"), cleaner.cleanInclusion("GFTPLHIA,GFTPL"));
@@ -75,7 +75,7 @@ class TxmbaCleanerTest : public CppUnit::TestFixture
 
         void testCleanLineExclusion1()
         {
-            TxmbaCleaner cleaner = TxmbaCleaner("a", CleanMode::substring,"b");
+            TxmbaCleaner cleaner = TxmbaCleaner("a", "b");
             CPPUNIT_ASSERT_EQUAL(string("QQGH,TPLH"), cleaner.cleanExclusion("QQGH,TPLH"));
             CPPUNIT_ASSERT_EQUAL(string("TTTT"), cleaner.cleanExclusion("TTTTT,TTTT"));
             CPPUNIT_ASSERT_EQUAL(string("GFTPL"), cleaner.cleanExclusion("GFTPLHIA,GFTPL"));
@@ -90,8 +90,8 @@ class TxmbaCleanerTest : public CppUnit::TestFixture
 
         void testFileCleanerExclusion()
         {
-            TxmbaCleaner cleaner = TxmbaCleaner("tests/cleaner/tx1.txt", CleanMode::substring, "tests/cleaner/tx1.inclusion.result.txt");
-            cleaner.cleanLines();
+            TxmbaCleaner cleaner = TxmbaCleaner("tests/cleaner/tx1.txt", "tests/cleaner/tx1.inclusion.result.txt");
+            cleaner.cleanLines(CleanMode::substring);
             CPPUNIT_ASSERT_EQUAL(string(""), runCommand("diff tests/cleaner/tx1.exclusion.expected.txt tests/cleaner/tx1.exclusion.result.txt"));
             runCommand("./cleaner tests/cleaner/tx1.txt 0 tests/cleaner/tx1.exclusion.result2.txt");
             CPPUNIT_ASSERT_EQUAL(string(""), runCommand("diff tests/cleaner/tx1.exclusion.expected.txt tests/cleaner/tx1.exclusion.result2.txt"));
@@ -99,8 +99,8 @@ class TxmbaCleanerTest : public CppUnit::TestFixture
 
         void testFileCleanerInclusion()
         {
-            TxmbaCleaner cleaner = TxmbaCleaner("tests/cleaner/tx1.txt", CleanMode::superstring, "tests/cleaner/tx1.inclusion.result.txt");
-            cleaner.cleanLines();
+            TxmbaCleaner cleaner = TxmbaCleaner("tests/cleaner/tx1.txt", "tests/cleaner/tx1.inclusion.result.txt");
+            cleaner.cleanLines(CleanMode::superstring);
             CPPUNIT_ASSERT_EQUAL(string(""), runCommand("diff tests/cleaner/tx1.inclusion.expected.txt tests/cleaner/tx1.inclusion.result.txt"));
             runCommand("./cleaner tests/cleaner/tx1.txt 1 tests/cleaner/tx1.inclusion.result2.txt");
             CPPUNIT_ASSERT_EQUAL(string(""), runCommand("diff tests/cleaner/tx1.inclusion.expected.txt tests/cleaner/tx1.inclusion.result2.txt"));
