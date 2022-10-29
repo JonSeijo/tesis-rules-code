@@ -10,6 +10,17 @@ out_parse_rules_*
 # Executables
 cleaner
 rule_parse_app
+ccf
+cleaner
+db
+freq_dist
+scrambler_app
+txmba_bag
+txmba_each
+
+rule_parse_test
+scrambler_test
+txmba_cleaner_test
 
 # Virtual enviroments
 venv-tesis-jm
