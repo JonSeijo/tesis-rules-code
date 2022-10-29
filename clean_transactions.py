@@ -58,8 +58,8 @@ parser.add_argument('--output_dir',
 
 parser.add_argument('--mode',
     type=str,
-    choices=['exact', 'substring', 'superstring'],
-    help=' substring or superstring mode for cleaning.')
+    choices=['minimum', 'substring', 'superstring'],
+    help=' substring, superstring or minimum mode for cleaning.')
 
 parser.add_argument('--threads',
     type=int,
@@ -88,8 +88,16 @@ validate_txs_names(path_input_dir, txs_names)
 
 
 executable = f"./{PATH_JM_CODE}cleaner"
-str_mode = args.mode[:3]  # sub/sup
-clean_mode = 0 if args.mode in ["substring", "0"] else 1
+str_mode = args.mode[:3]  # sub/sup/min
+
+if args.mode == "substring":
+    clean_mode = 0
+elif args.mode == "superstring":
+    clean_mode = 1
+elif args.mode == "minimum":
+    clean_mode = 2
+else:
+    raise Exception("Unexpected clean mode")
 
 print("---------------------------------")
 print("Running tx-cleaner with params:")
