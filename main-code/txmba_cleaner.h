@@ -45,16 +45,13 @@ class TxmbaCleaner {
     friend class TxmbaCleanerTest;
 
     protected:
-        // TODO: filenames no deberian ser miembros ni estar en el constructor
-        string inputFilename;
-        ofstream outputFile;
         string cleanLine(CleanMode cleanMode, string &line);
 
-        string cleanInclusion(const string &in);
-        string cleanExclusion(const string &in);
-        string cleanMinimum(const string &in);
+        string cleanInclusion(const string &line);
+        string cleanExclusion(const string &line);
+        string cleanMinimum(const string &line);
 
-        void writeLineToFile(string line);
+        static void writeLinesToFile(vector<string> &lines, const string &outputFilename);
         static list<string> getItemsPresent(vector<pair<string, bool>> &results) ;
         static vector<string> buildItems(const string &itemsLine);
         static vector<pair<string, bool>> buildItemsWithPresentStatus(const vector<string> &items);
@@ -62,9 +59,8 @@ class TxmbaCleaner {
         static list<string> cleanTransactionsWithMinimum(const vector<string> &transaction);
 
 	public:
-		TxmbaCleaner(const string &inputFilename, const string &outputFilename);
-        TxmbaCleaner(const TxmbaCleaner& other);
-        void cleanLines(CleanMode cleanMode);
+		TxmbaCleaner();
+        void cleanLines(CleanMode cleanMode, const string &inputFile, const string &outputFilename);
 
 
 };

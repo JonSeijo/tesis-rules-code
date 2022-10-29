@@ -1,39 +1,25 @@
 #include "txmba_cleaner.h"
 
 /**
- * Copy constructor
- * @param TxmbaCleaner& other
- */
-TxmbaCleaner::TxmbaCleaner(const TxmbaCleaner& other)
-{
-	//Initialize file to store results
-    //this->outputFile.open(outputFilename, std::ios_base::app | std::ios_base::out);
-    //this->outputFile.open(other.outputFile);
-}
-
-/**
  * Creates a new instance of the class
- * @param string inputFile the file where to read the transactions to be cleaned
- * @param string outputFilename where to store the cleaned output
  */
-TxmbaCleaner::TxmbaCleaner(const string &inputFile, const string &outputFilename) {
-	this->inputFilename = inputFile;
-    this->outputFile.open(outputFilename);
-}
+TxmbaCleaner::TxmbaCleaner() {}
 
 /**
  * Process each line of the file and clean it
  */
-void TxmbaCleaner::cleanLines(CleanMode cleanMode) {
+void TxmbaCleaner::cleanLines(CleanMode cleanMode, const string &inputFile, const string &outputFilename) {
     int txsCleaned = 0;
 
-    std::ifstream infile(this->inputFilename.c_str(), std::ifstream::in);
+    std::ifstream infile(inputFile.c_str(), std::ifstream::in);
     std::string line;
 
     //Get length of file
-    infile.seekg (0, infile.end);
-    int length = infile.tellg();
-    infile.seekg (0, infile.beg);
+    infile.seekg (0, std::ifstream::end);
+    long length = infile.tellg();
+    infile.seekg (0, std::ifstream::beg);
+
+    vector<string> cleanLines;
 
     if (length > 0) {
         while (std::getline(infile, line)) {
@@ -46,14 +32,14 @@ void TxmbaCleaner::cleanLines(CleanMode cleanMode) {
             if (currentLine.length()>0) {
                 string cleaned = cleanLine(cleanMode, currentLine);
                 if (cleaned.length()>0) {
-                    this->writeLineToFile(cleaned);
+                    cleanLines.push_back(cleaned);
                 }
             }
         }
     }
-
     infile.close();
-    outputFile.close();
+
+    this->writeLinesToFile(cleanLines, outputFilename);
 }
 
 string TxmbaCleaner::cleanLine(CleanMode cleanMode, string &line) {
@@ -165,13 +151,13 @@ list<string> TxmbaCleaner::getItemsPresent(vector<pair<string, bool>>& results) 
     return res;
 }
 
-/**
- * Write processed line to file
- * @param string line
- */
-void TxmbaCleaner::writeLineToFile(string line)
-{
-    line.erase(std::remove(line.begin(), line.end(), '\n'), line.end());
-    this->outputFile << line << endl;
+void TxmbaCleaner::writeLinesToFile(vector<string> &lines, const string &outputFilename) {
+    ofstream outputFile;
+    outputFile.open(outputFilename);
+    for (string &line : lines) {
+        line.erase(std::remove(line.begin(), line.end(), '\n'), line.end());
+        outputFile << line << endl;
+    }
+    outputFile.close();
 }
 

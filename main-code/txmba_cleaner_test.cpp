@@ -46,7 +46,7 @@ class TxmbaCleanerTest : public CppUnit::TestFixture
 
         void testCleanLineInclusion1()
         {
-            TxmbaCleaner cleaner = TxmbaCleaner("a", "b");
+            TxmbaCleaner cleaner = TxmbaCleaner();
             CPPUNIT_ASSERT_EQUAL(string("AAA"), cleaner.cleanInclusion("AAA,AA"));
             CPPUNIT_ASSERT_EQUAL(string("AAA"), cleaner.cleanInclusion("AA,AAA"));
             CPPUNIT_ASSERT_EQUAL(string("AAA,B"), cleaner.cleanInclusion("AA,AAA,B"));
@@ -62,7 +62,7 @@ class TxmbaCleanerTest : public CppUnit::TestFixture
 
         void testCleanLineInclusion2()
         {
-            TxmbaCleaner cleaner = TxmbaCleaner("a", "b");
+            TxmbaCleaner cleaner = TxmbaCleaner();
             CPPUNIT_ASSERT_EQUAL(string("QQGH,TPLH"), cleaner.cleanInclusion("QQGH,TPLH"));
             CPPUNIT_ASSERT_EQUAL(string("TTTTT"), cleaner.cleanInclusion("TTTTT,TTTT"));
             CPPUNIT_ASSERT_EQUAL(string("GFTPLHIA"), cleaner.cleanInclusion("GFTPLHIA,GFTPL"));
@@ -77,7 +77,7 @@ class TxmbaCleanerTest : public CppUnit::TestFixture
 
         void testCleanLineExclusion1()
         {
-            TxmbaCleaner cleaner = TxmbaCleaner("a", "b");
+            TxmbaCleaner cleaner = TxmbaCleaner();
             CPPUNIT_ASSERT_EQUAL(string("QQGH,TPLH"), cleaner.cleanExclusion("QQGH,TPLH"));
             CPPUNIT_ASSERT_EQUAL(string("TTTT"), cleaner.cleanExclusion("TTTTT,TTTT"));
             CPPUNIT_ASSERT_EQUAL(string("GFTPL"), cleaner.cleanExclusion("GFTPLHIA,GFTPL"));
@@ -91,7 +91,7 @@ class TxmbaCleanerTest : public CppUnit::TestFixture
         }
 
         void testCleanLineMinimum() {
-            TxmbaCleaner cleaner = TxmbaCleaner("a", "b");
+            TxmbaCleaner cleaner = TxmbaCleaner();
             CPPUNIT_ASSERT_EQUAL(string(""), cleaner.cleanMinimum(""));
             CPPUNIT_ASSERT_EQUAL(string("QQGH,TPLH"), cleaner.cleanMinimum("QQGH,TPLH"));
             CPPUNIT_ASSERT_EQUAL(string("TPLH"), cleaner.cleanMinimum("QQGHH,TPLH"));
@@ -102,25 +102,27 @@ class TxmbaCleanerTest : public CppUnit::TestFixture
 
         void testFileCleanerExclusion()
         {
-            TxmbaCleaner cleaner = TxmbaCleaner("tests/cleaner_tests/tx1.txt", "tests/cleaner_tests/tx1.exclusion.result.txt");
-            cleaner.cleanLines(CleanMode::substring);
+            TxmbaCleaner cleaner = TxmbaCleaner();
+            cleaner.cleanLines(CleanMode::substring, "tests/cleaner_tests/tx1.txt", "tests/cleaner_tests/tx1.exclusion.result.txt");
             CPPUNIT_ASSERT_EQUAL(string(""), runCommand("diff tests/cleaner_tests/tx1.exclusion.expected.txt tests/cleaner_tests/tx1.exclusion.result.txt"));
+
             runCommand("./cleaner tests/cleaner_tests/tx1.txt 0 tests/cleaner_tests/tx1.exclusion.result2.txt");
             CPPUNIT_ASSERT_EQUAL(string(""), runCommand("diff tests/cleaner_tests/tx1.exclusion.expected.txt tests/cleaner_tests/tx1.exclusion.result2.txt"));
         }        
 
         void testFileCleanerInclusion()
         {
-            TxmbaCleaner cleaner = TxmbaCleaner("tests/cleaner_tests/tx1.txt", "tests/cleaner_tests/tx1.inclusion.result.txt");
-            cleaner.cleanLines(CleanMode::superstring);
+            TxmbaCleaner cleaner = TxmbaCleaner();
+            cleaner.cleanLines(CleanMode::superstring, "tests/cleaner_tests/tx1.txt", "tests/cleaner_tests/tx1.inclusion.result.txt");
             CPPUNIT_ASSERT_EQUAL(string(""), runCommand("diff tests/cleaner_tests/tx1.inclusion.expected.txt tests/cleaner_tests/tx1.inclusion.result.txt"));
+
             runCommand("./cleaner tests/cleaner_tests/tx1.txt 1 tests/cleaner_tests/tx1.inclusion.result2.txt");
             CPPUNIT_ASSERT_EQUAL(string(""), runCommand("diff tests/cleaner_tests/tx1.inclusion.expected.txt tests/cleaner_tests/tx1.inclusion.result2.txt"));
         }
 
         void testFileCleanerMinimum() {
-            TxmbaCleaner cleaner = TxmbaCleaner("tests/cleaner_tests/tx1.txt", "tests/cleaner_tests/tx1.minimum.result.txt");
-            cleaner.cleanLines(CleanMode::minimum);
+            TxmbaCleaner cleaner = TxmbaCleaner();
+            cleaner.cleanLines(CleanMode::minimum, "tests/cleaner_tests/tx1.txt", "tests/cleaner_tests/tx1.minimum.result.txt");
             CPPUNIT_ASSERT_EQUAL(string(""), runCommand("diff tests/cleaner_tests/tx1.minimum.expected.txt tests/cleaner_tests/tx1.minimum.result.txt"));
 
             runCommand("./cleaner tests/cleaner_tests/tx1.txt 2 tests/cleaner_tests/tx1.minimum.result2.txt");
