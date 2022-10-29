@@ -58,13 +58,12 @@ parser.add_argument('--output_dir',
 
 parser.add_argument('--mode',
     type=str,
-    choices=['substring', 'superstring'],
-    help=' substring or superstring mode for cleaning. Default: substring',
-    default='substring')
+    choices=['exact', 'substring', 'superstring'],
+    help=' substring or superstring mode for cleaning.')
 
 parser.add_argument('--threads',
     type=int,
-    help=' amount of subprocesses for paralelization',
+    help=' amount of subprocesses for paralelization. Default=1',
     default=1)
 
 

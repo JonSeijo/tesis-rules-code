@@ -13,19 +13,20 @@ DEPS = $(_DEPS)
 $(ODIR)/%.o: %.cpp $(DEPS)
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
+all: all_main all_tests
+
+all_main: parse coverage db cleaner txmba_each txmba_bag freq_dist rule_parse_app scrambler_app
+
 protein:
 	$(CXX) -c protein.cpp -o protein.o $(CXXFLAGS) $(BOOSTFS)
 
 parse: protein
 	$(CXX) -c parse.cpp -o parse.o $(CXXFLAGS) $(BOOSTFS)
 
-parse_main:
-	$(CXX) main.cpp parse.o -o main $(CXXFLAGS) $(LIBSCPPUNIT)
-
-coverage:
+coverage: parse
 	$(CXX) compute_coverage_family.cpp parse.o -o ccf $(BOOSTFS) $(CXXFLAGS)
 
-db: 
+db: parse
 	$(CXX) create_db.cpp parse.o -o db $(BOOSTFS) -lsqlite3 $(CXXFLAGS) -O2
 
 txmba: parse
@@ -48,7 +49,7 @@ txmba_bag: txmba
 freq_dist: protein parse
 	$(CXX) calculate_freq_dist_for_family.cpp protein.o parse.o -o freq_dist $(BOOSTFS) $(CXXFLAGS) -O2
 
-rule_parse: parse
+rule_parse: parse txmba
 	$(CXX) -c rule_parse_and_match.cpp parse.o protein.o txmba.o -o rule_parse_and_match.o $(CXXFLAGS) $(BOOSTFS) -O2
 
 rule_parse_app: rule_parse
@@ -61,15 +62,16 @@ scrambler_app: scrambler
 	$(CXX) scrambler_app.cpp scrambler.o parse.o -o scrambler_app $(CXXFLAGS) $(BOOSTFS)
 
 ## Tests
+all_tests: test txmba_test txmba_cleaner_test rule_parse_test scrambler_test
 
 test: protein parse
 	$(CXX) parse_test.cpp parse.o protein.o -o parse_test $(CXXFLAGS) $(LIBSCPPUNIT) $(BOOSTFS)
 	$(CXX) mrs_test.cpp parse.o protein.o -o mrs_test $(CXXFLAGS) $(LIBSCPPUNIT) $(BOOSTFS)
 
-txmba_test: txmba
+txmba_test: txmba cleaner
 	$(CXX) txmba_test.cpp parse.o protein.o txmba.o -o txmba_test $(CXXFLAGS) $(LIBSCPPUNIT) $(BOOSTFS)
 
-txmba_cleaner_test: txmba_cleaner
+txmba_cleaner_test: cleaner txmba_cleaner txmba
 	$(CXX) txmba_cleaner_test.cpp parse.o protein.o txmba.o txmba_cleaner.o -o txmba_cleaner_test $(CXXFLAGS) $(LIBSCPPUNIT) $(BOOSTFS)
 
 rule_parse_test: rule_parse

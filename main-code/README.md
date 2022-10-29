@@ -7,6 +7,11 @@ sudo apt install libboost-all-dev
 ```
 
 
+Instalar libreria de testing para c++
+
+```bash
+sudo apt-get install libcppunit-dev
+```
 
 ## Ejemplo de uso
 

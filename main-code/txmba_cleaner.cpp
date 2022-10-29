@@ -14,14 +14,14 @@ TxmbaCleaner::TxmbaCleaner(const TxmbaCleaner& other)
 /**
  * Creates a new instance of the class
  * @param string inputFile the file where to read the transactions to be cleaned
- * @param bool inclusionMode whether to clean for inclusion or exclusion
+ * @param CleanMode cleanMode whether to clean for inclusion or exclusion
  * @param string outputFilename where to store the cleaned output
  */
-TxmbaCleaner::TxmbaCleaner(string inputFile, bool inclusionMode, string outputFilename)
+TxmbaCleaner::TxmbaCleaner(const string &inputFile, CleanMode cleanMode, const string &outputFilename)
 {
 	this->inputFilename = inputFile;
     this->outputFile.open(outputFilename);
-    this->inclusion = inclusionMode;
+    this->cleanMode = cleanMode;
 }
 
 
@@ -48,15 +48,9 @@ void TxmbaCleaner::cleanLines()
             }
             std::istringstream iss(line);
             string currentLine = iss.str();
-            string cleaned;
-            if(currentLine.length()>0) {
-                if(inclusion) {
-                    cleaned = this->cleanInclusion(currentLine);
-                } else {
-                    cleaned = this->cleanExclusion(currentLine);
-                }
-
-                if(cleaned.length()>0) {
+            if (currentLine.length()>0) {
+                string cleaned = cleanLine(cleanMode, currentLine);
+                if (cleaned.length()>0) {
                     this->writeLineToFile(cleaned);
                 }
             }
@@ -67,6 +61,18 @@ void TxmbaCleaner::cleanLines()
     outputFile.close();
 }
 
+string TxmbaCleaner::cleanLine(CleanMode cleanMode, string &line) {
+    switch (cleanMode) {
+        case CleanMode::substring:
+            return this->cleanExclusion(line);
+        case CleanMode::superstring:
+            return this->cleanInclusion(line);
+        case CleanMode::minimum:
+            return this->cleanMinimum(line);
+        default:
+            throw std::invalid_argument("Invalid cleanMode");
+    }
+}
 
 /**
  * Clean the current line with a specific criteria
@@ -137,6 +143,11 @@ string TxmbaCleaner::cleanExclusion(string line)
     
     return boost::algorithm::join(res, ",");
 }
+
+string TxmbaCleaner::cleanMinimum(string line) {
+    assert(0 && "Not implemented!");
+}
+
 
 /**
  * Write processed line to file

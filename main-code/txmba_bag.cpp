@@ -6,7 +6,7 @@ int main(int argc, char* argv[])
     	TxmbaBag txGenerator = TxmbaBag::createFromParams(argc, argv);
     	txGenerator.generateTransactions();
     	cout << txGenerator.displaySummary();
-    } catch(std::runtime_error e) {
+    } catch(std::runtime_error &e) {
     	cout << "** Error: " << e.what() << endl;
     }
     

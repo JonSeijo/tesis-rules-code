@@ -5,12 +5,15 @@ void printHelp()
 {
 	cout << " Help: " << endl;
 	cout << "./cleaner input mode output" << endl << endl;
-	cout << "mode is 0 for inclusion cleaning, 1 for exclusion " << endl;
+	cout << "mode is: " << endl
+		 << " 0 for exclusion cleaning (substring), " << endl
+		 << " 1 for inclusion (superstring) " << endl
+		 << " 2 for min_len (exact) " << endl;
 }
 
 int main(int argc, char* argv[])
 {
-	bool mode;
+	int mode;
 	
 	if(argc < 4) {
 		cerr << "** Error not enough parameters! " << endl;
@@ -27,8 +30,8 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
     }
 
-    
-    TxmbaCleaner cleaner = TxmbaCleaner(input, mode, output);
+    auto cleanMode = static_cast<CleanMode>(mode);
+    TxmbaCleaner cleaner = TxmbaCleaner(input, cleanMode, output);
     cleaner.cleanLines();
 
     return EXIT_SUCCESS;

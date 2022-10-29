@@ -28,28 +28,39 @@ using namespace std;
 
 namespace fs = boost::filesystem;
 
+enum CleanMode {
+    substring = 0, // exclusion
+    superstring = 1, // inclusion
+    minimum = 2 // exact
+};
+
 /**
  * Cleaner for MBA transactions.
- * Depending on the mode it will clean either for inclusion (or superstirng mode) or exclusion (or substring mode)
+ * Depending on the mode it will clean either for:
+ *   inclusion (or superstring mode),
+ *   exclusion (or substring mode),
+ *   minimum (or exact mode),
  */
-class TxmbaCleaner
-{
+class TxmbaCleaner {
     friend class TxmbaCleanerTest;
 
     protected:
         string inputFilename;
         ofstream outputFile;
+        string cleanLine(CleanMode cleanMode, string &line);
+
         string cleanInclusion(string in);
         string cleanExclusion(string in);
-        bool inclusion = true;
+        string cleanMinimum(string in);
+
+        CleanMode cleanMode = CleanMode::substring;
 
         void writeLineToFile(string line);
 
 	public:
-		TxmbaCleaner(string inputFilename, bool inclusionMode, string outputFilename);
+		TxmbaCleaner(const string &inputFilename, CleanMode cleanMode, const string &outputFilename);
         TxmbaCleaner(const TxmbaCleaner& other);
         void cleanLines();
-        
 };
 
 #endif // TXMBACLEANER_H
