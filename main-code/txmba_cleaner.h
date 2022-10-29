@@ -58,12 +58,14 @@ class TxmbaCleaner {
         static list<string> getItemsPresent(vector<pair<string, bool>> &results) ;
         static vector<string> buildItems(const string &itemsLine);
         static vector<pair<string, bool>> buildItemsWithPresentStatus(const vector<string> &items);
-        static list<string> filterItemsWithMode(const vector<string> &items, bool removeContained);
+        static list<string> cleanTransactionsWithInclusionExclusion(const vector<string> &items, bool removeContained);
+        static list<string> cleanTransactionsWithMinimum(const vector<string> &transaction);
 
 	public:
 		TxmbaCleaner(const string &inputFilename, const string &outputFilename);
         TxmbaCleaner(const TxmbaCleaner& other);
         void cleanLines(CleanMode cleanMode);
+
 
 };
 

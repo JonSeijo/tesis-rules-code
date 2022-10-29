@@ -93,10 +93,12 @@ clean_tests:
 	rm -f "tests/txs/3/out/each-result.txt"
 	rm -f "tests/txs/4/out/each-result.txt"
 	rm -f "tests/txs/4/out/bag-result.txt"
-	rm -f "tests/cleaner/tx1.inclusion.result2.txt"
-	rm -f "tests/cleaner/tx1.exclusion.result2.txt"
-	rm -f "tests/cleaner/tx1.inclusion.result.txt"
-	rm -f "tests/cleaner/tx1.exclusion.result.txt"
+	rm -f "tests/cleaner_tests/tx1.inclusion.result2.txt"
+	rm -f "tests/cleaner_tests/tx1.exclusion.result2.txt"
+	rm -f "tests/cleaner_tests/tx1.inclusion.result.txt"
+	rm -f "tests/cleaner_tests/tx1.exclusion.result.txt"
+	rm -f "tests/cleaner_tests/tx1.minimum.result.txt"
+	rm -f "tests/cleaner_tests/tx1.minimum.result2.txt"
 
 clean:
 	rm -f $(ODIR)/*.o

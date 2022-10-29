@@ -1,3 +1,7 @@
+# tests
+tests/cleaner_tests/*.result.txt
+tests/cleaner_tests/*.result2.txt
+
 # exps
 resultados/experimento15/output
 
@@ -12,7 +16,6 @@ b
 cleaner
 rule_parse_app
 ccf
-cleaner
 db
 freq_dist
 scrambler_app

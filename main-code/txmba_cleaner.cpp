@@ -69,31 +69,61 @@ string TxmbaCleaner::cleanLine(CleanMode cleanMode, string &line) {
     }
 }
 
-bool contains(const string &haystack, const string &needle) {
-    return haystack.find(needle) != std::string::npos;
-}
 
 string TxmbaCleaner::cleanInclusion(const string &itemsLine) {
     vector<string> items = buildItems(itemsLine);
-    list<string> res = filterItemsWithMode(items, false);
+    list<string> res = cleanTransactionsWithInclusionExclusion(items, false);
     return boost::algorithm::join(res, ",");
 }
 
 string TxmbaCleaner::cleanExclusion(const string &itemsLine) {
     vector<string> items = buildItems(itemsLine);
-    list<string> res = filterItemsWithMode(items, true);
+    list<string> res = cleanTransactionsWithInclusionExclusion(items, true);
     return boost::algorithm::join(res, ",");
 }
 
+string TxmbaCleaner::cleanMinimum(const string &itemsLine) {
+    vector<string> items = buildItems(itemsLine);
+    list<string> res = cleanTransactionsWithMinimum(items);
+    return boost::algorithm::join(res, ",");
+}
+
+bool contains(const string &haystack, const string &needle) {
+    return haystack.find(needle) != std::string::npos;
+}
+
+int minSizeOfItem(const vector<string> &transaction) {
+    if (transaction.empty()) {
+        return 0;
+    }
+    int minSize = (int) transaction[0].size();
+    for (const auto &item : transaction) {
+        if ((int)item.size() < minSize) {
+            minSize = (int) item.size();
+        }
+    }
+    return minSize;
+}
+
+list<string> getItemsOfSize(const vector<string> &transaction, int size) {
+    list<string> result;
+    for (const string &item: transaction) {
+        if ((int)item.size() == size) {
+            result.emplace_back(item);
+        }
+    }
+    return result;
+}
+
 // TODO: Sigue siendo horrible
-list<string> TxmbaCleaner::filterItemsWithMode(const vector<string> &items, bool removeContained) {
+list<string> TxmbaCleaner::cleanTransactionsWithInclusionExclusion(const vector<string> &items, bool useExclusionMode) {
     vector<pair<string, bool>> results = buildItemsWithPresentStatus(items);
     for (auto &result : results) {
         if (result.second) {
             for (auto &comp : results) {
                 if (&result.first != &comp.first && comp.second) {
                     if (contains(result.first, comp.first)) {
-                        if (removeContained) {
+                        if (useExclusionMode) {
                             result.second = false;
                         } else {
                             comp.second = false;
@@ -104,6 +134,11 @@ list<string> TxmbaCleaner::filterItemsWithMode(const vector<string> &items, bool
         }
     }
     return getItemsPresent(results);
+}
+
+list<string> TxmbaCleaner::cleanTransactionsWithMinimum(const vector<string> &transaction) {
+    int minSize = minSizeOfItem(transaction);
+    return getItemsOfSize(transaction, minSize);
 }
 
 vector<string> TxmbaCleaner::buildItems(const string &itemsLine) {
@@ -130,11 +165,6 @@ list<string> TxmbaCleaner::getItemsPresent(vector<pair<string, bool>>& results) 
     return res;
 }
 
-string TxmbaCleaner::cleanMinimum(const string &line) {
-    assert(0 && "Not implemented!");
-}
-
-
 /**
  * Write processed line to file
  * @param string line
@@ -144,3 +174,4 @@ void TxmbaCleaner::writeLineToFile(string line)
     line.erase(std::remove(line.begin(), line.end(), '\n'), line.end());
     this->outputFile << line << endl;
 }
+
