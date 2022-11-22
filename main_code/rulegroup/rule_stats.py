@@ -9,10 +9,10 @@ import sys
 import ast
 import sqlite3
 
-from fastaread import Protein
-from rulegroup import Rule, ClusterRule,ClusterRuleMatch,OcurrenceMatrix
-from base_graph import GraphvizGraph, SimpleGraph
-from metrics import StringMetrics
+from main_code.rulegroup.fastaread import Protein
+from main_code.rulegroup.rulegroup import Rule, ClusterRule,ClusterRuleMatch,OcurrenceMatrix
+from main_code.rulegroup.base_graph import GraphvizGraph, SimpleGraph
+from main_code.rulegroup.metrics import StringMetrics
 
 
 class RuleStats(object):

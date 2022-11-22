@@ -140,6 +140,6 @@ runStats = function(directory, distanceFile = "distances.txt") {
 # - mv distances.txt resultados/experimento15/output/jonno_NEWAnk/distances_NEWAnk.txt
 # - correr este script
 
-#runStats("/home/jonno/exactas/tesis/tesis-jonno/tesis-code/main-code/resultados/experimento15/output/jonno_ank/", "distances_jonno_ank.txt")
-#runStats("/home/jonno/exactas/tesis/tesis-jonno/tesis-code/main-code/resultados/experimento15/output/jonno_NEWAnk", "distances_NEWAnk.txt")
-runStats("/home/jonno/exactas/tesis/tesis-jonno/tesis-code/main-code/resultados/experimento15/output/jonno_TPR1_oldrules", "distances_TPR1_old.txt")
+#runStats("/home/jonno/exactas/tesis/tesis-jonno/tesis-code/main_code/resultados/experimento15/output/jonno_ank/", "distances_jonno_ank.txt")
+#runStats("/home/jonno/exactas/tesis/tesis-jonno/tesis-code/main_code/resultados/experimento15/output/jonno_NEWAnk", "distances_NEWAnk.txt")
+runStats("/home/jonno/exactas/tesis/tesis-jonno/tesis-code/main_code/resultados/experimento15/output/jonno_TPR1_oldrules", "distances_TPR1_old.txt")

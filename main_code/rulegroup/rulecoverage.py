@@ -8,9 +8,9 @@ import re
 import inspect
 import ntpath
 from pathlib import Path
-from fastaread import Protein,FastaParser
-from rulegroup import RuleGroupParser,Rule
-from rulecoverageexport import RuleCoverageExportToImage,RuleCoverageExportToVector, RuleCoverageExportToXYZ, RuleCoverageExportToHtml, RuleCoverageExportToCsv
+from main_code.rulegroup.fastaread import Protein,FastaParser
+from main_code.rulegroup.rulegroup import RuleGroupParser,Rule
+from main_code.rulegroup.rulecoverageexport import RuleCoverageExportToImage,RuleCoverageExportToVector, RuleCoverageExportToXYZ, RuleCoverageExportToHtml, RuleCoverageExportToCsv
 
 class RuleCoverageResult(object):
     """ Models the result of a protein being covered by a rule """

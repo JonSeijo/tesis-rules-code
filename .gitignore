@@ -12,7 +12,7 @@ imagenes/
 .Rhistory
 
 # DBs
-main-code/*.db
+main_code/*.db
 
 # Output
 output/

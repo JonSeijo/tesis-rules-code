@@ -14,7 +14,7 @@ import os
 from multiprocessing import Pool
 from typing import List
 
-PATH_JM_CODE = "main-code/"
+PATH_JM_CODE = "main_code/"
 PATH_DEFAULT_TXS = "output/transactions/"
 PATH_DEFAULT_CLEAN_TXS = "output/clean_transactions/"
 

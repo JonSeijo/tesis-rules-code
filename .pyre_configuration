@@ -5,6 +5,6 @@
   ],
   "taint_models_path": "/home/jonno/exactas/tesis/tesis-jonno/venv-tesis/lib/pyre_check/taint",
   "ignore_all_errors": [
-    "main-code\/*"
+    "main_code\/*"
   ]
 }
