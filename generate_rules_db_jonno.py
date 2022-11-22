@@ -120,6 +120,8 @@ if __name__ == '__main__':
 
     # TODO: Parametrizar
     # TODO: Permitir pasar directamente un rule path?
+    # TODO: OJO, que pasa con las transacciones kmeras?
+    # TODO: Dividir el tipo de MR con el tipo de refinamiento, ahora tengo uno nuevo
     family = "NEWAnk"
     min_len = "len4"
     mr_type = "ALL_sub"

@@ -1,11 +1,12 @@
+from dataclasses import dataclass
 import pandas as pd
 from typing import Sized, Any, Dict, Iterable, List, Tuple, Set, TypeVar
 
 # TODO: Use pre-exisiting classes for rules
-# TODO: Rename module so it doesn't use -
-import importlib
-rg = importlib.import_module("main-code.rulegroup.rulegroup")
 
+# import importlib
+# rg = importlib.import_module("main_code.rulegroup.rulegroup")
+import main_code.rulegroup.rulegroup as rg
 
 
 def antecedents(
@@ -117,6 +118,43 @@ def build_df_rules_from_path(path: str) -> pd.DataFrame:
     df_rules["ruletype_simple"] = ruletypes_simple
 
     return df_rules
+
+
+@dataclass
+class RuleMetadata:
+    family: str
+    min_len: str
+    transaction_type: str
+    mr_type: str
+    clean_mode: str
+    min_support: str
+    min_confidence: str
+    
+
+# FIXME: Works on Linux only!
+def build_rule_metadata_from_rule_filename(filename):
+    s_metadata = filename.split("/")[-1]  # Me quedo con el nombre de archivo
+    s_metadata = s_metadata[:-4]  # Quito el .csv
+
+    md = s_metadata.split("_")
+    family = md[0]
+    min_len = md[1]
+    
+    if md[2] == "nomrs":
+        transaction_type = md[2]
+        mr_type = None
+        clean_mode = None
+        min_support = md[3][1:] # Remove prefix "s"
+        min_confidence = md[4][1:] # Remove prefix "c"
+    else:
+        transaction_type = "mrs"
+        mr_type = md[2]  
+        clean_mode = md[3]
+        min_support = md[4][1:] # Remove prefix "s"
+        min_confidence = md[5][1:] # Remove prefix "c"
+
+    return RuleMetadata(family, min_len, transaction_type, mr_type, clean_mode, min_support, min_confidence)
+    
 
 def build_info_rules_for(family, min_len, mr_type, min_support, min_confidence):
     print(f"build_info_rules_for({family}, {min_len}, {mr_type}, {min_support}, {min_confidence})")

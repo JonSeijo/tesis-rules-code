@@ -58,9 +58,32 @@ class TestInfoRules(unittest.TestCase):
         self.assertEqual(expected, result)
 
 
+    def test_build_metadata(self) -> None:
+        metadata = ir.build_rule_metadata_from_rule_filename(
+            "output/rules/TPR1_len4_ALL_sub_s0.025_c0.9.csv"
+        )
+
+        self.assertEqual("TPR1", metadata.family)
+        self.assertEqual("len4", metadata.min_len)
+        self.assertEqual("mrs", metadata.transaction_type)
+        self.assertEqual("ALL", metadata.mr_type)
+        self.assertEqual("sub", metadata.clean_mode)
+        self.assertEqual("0.025", metadata.min_support)
+        self.assertEqual("0.9", metadata.min_confidence)
 
 
+    def test_build_metadata_nomrs(self) -> None:
+        metadata = ir.build_rule_metadata_from_rule_filename(
+            "output/rules/TPR1_len4_nomrs_s0.025_c0.9.csv"
+        )
 
+        self.assertEqual("TPR1", metadata.family)
+        self.assertEqual("len4", metadata.min_len)
+        self.assertEqual("nomrs", metadata.transaction_type)
+        self.assertEqual(None, metadata.mr_type)
+        self.assertEqual(None, metadata.clean_mode)
+        self.assertEqual("0.025", metadata.min_support)
+        self.assertEqual("0.9", metadata.min_confidence)
 
 
 if __name__ == '__main__':
