@@ -44,6 +44,8 @@ def all_mrs_from_transactions(txs: List[List[str]]) -> List[str]:
 
 
 def build_rule_list_from_df(df_rules) -> List[Tuple[Set[str], Set[str]]]:
+    if df_rules.empty:
+        return []
     return [rule_from_str(rule[0]) for idx, rule in df_rules[["rules"]].iterrows()]
 
 # "{ALHV,LHIA} => {LHVA}"  ----> ({ALHV,LHIA}, {LHVA})
