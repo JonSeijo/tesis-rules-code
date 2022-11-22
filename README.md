@@ -6,7 +6,7 @@
 
 - `maximal-repeats-transactions/`: repositorio para generar transacciones de maximal repeats a partir de una familia de proteinas. 
 
-- `main-code`: generador de reglas, analisis posteriores y generador de db para el visualizador. #TODO: subdivisiones
+- `main_code`: generador de reglas, analisis posteriores y generador de db para el visualizador. #TODO: subdivisiones
 
 - `protein-visualization`: docker y la aplicacion visualizadora en si.
 
@@ -40,7 +40,16 @@
   : logo_maker.py
 
 - Analisis de logos
-```python3 logo_analysis.py -sto_path tesis-jmenriquez-code/out_parse_rules_jonno_NEWAnk/ -sto GADV LHLA LISH TPLH > output/logos/logo_analysis_jonno_NEWAnk.txt```
+```bash
+python3 logo_analysis.py -sto_path tesis-jmenriquez-code/out_parse_rules_jonno_NEWAnk/ -sto GADV LHLA LISH TPLH > output/logos/logo_analysis_jonno_NEWAnk.txt
+```
 
-```python3 logo_analysis.py -sto_path tesis-jmenriquez-code/out_parse_rules_jm_ank -sto GADV LHLA LISH TPLH > output/logos/logo_analysis_jm_ank.txt```
+```bash
+python3 logo_analysis.py -sto_path tesis-jmenriquez-code/out_parse_rules_jm_ank -sto GADV LHLA LISH TPLH > output/logos/logo_analysis_jm_ank.txt
+```
 
+- Generacion de db: `rule_db_generator.py`
+
+```bash
+python3 -m rule_db_generator --proteinPath=../db/canonicalFamilyDataset/familyDataset/TPR1/ --ruleFile=output/rules/TPR1_len4_ALL_sub_s0.025_c0.9.csv --filename=output/dbs/db_test.db
+``` 
