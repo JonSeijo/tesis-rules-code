@@ -1,9 +1,14 @@
 # transactions_analysis.py
-import os
+from array import array
 from collections import defaultdict
 from typing import Dict, List, Set
+import gc
+import os
 
+import humanize
 import pandas as pd
+import psutil
+
 
 
 # TODO: Testing. Dividir construccion de dict de dataframe.
@@ -101,7 +106,60 @@ def build_pairs_mr_tx_frequency_df(
             freq_by_pair_data["freq_percentage"].append(frequency / len(transactions))
             freq_by_pair_data["family"].append(family)
         print(f"{family} ready.")
-        
+
+
+    print("Building DataFrame")
+    return pd.DataFrame(freq_by_pair_data)
+
+
+
+
+# process = psutil.Process()
+def print_memory_footprint(process):
+    print("Memoria:", humanize.naturalsize(process.memory_info().rss))
+
+
+def build_pairs_mr_tx_frequency_df_memory_efficient(
+    txs_from_family: Dict[str, List[List[str]]],
+    mr_tx_frequency_df: pd.DataFrame,
+    min_support: float
+):
+    if len(txs_from_family) != 1:
+        raise Exception("\"build_pairs_mr_tx_frequency_df_memory_efficient\" only accepts one family for efficiency purposes")
+
+    process = psutil.Process()
+    print_memory_footprint(process)
+
+    [(family, transactions)] = txs_from_family.items()
+    frequent_mrs_by_family = build_frequent_mrs_by_family(mr_tx_frequency_df, min_support)
+    family_frequent_mrs = frequent_mrs_by_family[family] if family in frequent_mrs_by_family else {}
+    print(f"Building freqs_by_pair_combinations for {family}...")
+    freq_by_pair = get_freqs_by_pair_combinations(family_frequent_mrs, transactions)
+
+
+    print_memory_footprint(process) 
+
+    print(f"Building freqs_by_pair_data for {family}...")
+    freq_by_pair_data = {  "freq": array('l'), "freq_percentage": array('d') }
+    for itempair, frequency in freq_by_pair.items():
+        freq_by_pair_data["freq"].append(frequency)
+        freq_by_pair_data["freq_percentage"].append(frequency / len(transactions))
+    print(f"{family} ready.")
+
+
+    print_memory_footprint(process) 
+
+    # ---------------
+    # Free memory
+    del frequent_mrs_by_family
+    del family_frequent_mrs
+    del freq_by_pair
+    gc.collect()
+    # ---------------
+
+    print_memory_footprint(process) 
+
+    print("Building final DataFrame")
     return pd.DataFrame(freq_by_pair_data)
 
 # mrs: deberian ser los items frecuentes para que tenga sentido la optimizacion
@@ -115,7 +173,7 @@ def get_freqs_by_pair_combinations(mrs, transactions):
     freq_by_pair = defaultdict(int)
 
     for t_index, tx in enumerate(transactions_frequents):
-        if t_index % 10000 == 0:
+        if t_index % 5000 == 0:
             print(f" .... {t_index}/{len(transactions_frequents)}")
 
         for i in range(len(tx)):

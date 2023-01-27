@@ -19,10 +19,12 @@ debugpy==1.6.0
 decorator==5.1.1
 defusedxml==0.7.1
 dill==0.3.4
+efficient-apriori==2.0.1
 entrypoints==0.4
 executing==0.8.3
 fastjsonschema==2.15.3
 fonttools==4.33.3
+humanize==4.4.0
 idna==3.3
 importlib-metadata==4.11.3
 importlib-resources==5.7.1
