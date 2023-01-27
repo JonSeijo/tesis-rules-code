@@ -22,7 +22,7 @@ import shlex
 family = "LRR1"
 clean_mode = "min"
 mr_types = ["ALL", "NE", "NN", "SMR"]
-min_lens = ["4"]
+min_lens = ["5"]
 supports = ["0.015", "0.020", "0.025", "0.030"]
 confidences = ["0.9"]
 max_time="60"

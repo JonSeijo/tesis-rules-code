@@ -186,10 +186,16 @@ if __name__ == '__main__':
         required=True,
         help='Name of family_b, transaction prefix (NEWAnk_len4_ALL_sub || TPR1_len4_ALL_sub)')
 
-    parser.add_argument('--support',
+    parser.add_argument('--support_a',
         type=str,
         action='store',
-        help='support used in rule generation. [default=0.025]',
+        help='support used in rule generation for family_a. [default=0.025]',
+        default="0.025")
+
+    parser.add_argument('--support_b',
+        type=str,
+        action='store',
+        help='support used in rule generation for family_b. [default=0.025]',
         default="0.025")
 
     parser.add_argument('--confidence',
@@ -201,7 +207,8 @@ if __name__ == '__main__':
     args: argparse.Namespace = parser.parse_args()
     family_a = str(args.family_a)
     family_b = str(args.family_b)
-    support = str(args.support)
+    support_a = str(args.support_a)
+    support_b = str(args.support_b)
     confidence = str(args.confidence)
 
     """
@@ -218,10 +225,10 @@ if __name__ == '__main__':
     #   Quiza parametrizar solo el rule filename y obtener las txs del prefijo
 
     path_mr_a = f"output/clean_transactions/{family_a}.csv"
-    path_rules_a = f"output/rules/{family_a}_s{support}_c{confidence}.csv"
+    path_rules_a = f"output/rules/{family_a}_s{support_a}_c{confidence}.csv"
     
     path_mr_b = f"output/clean_transactions/{family_b}.csv"
-    path_rules_b = f"output/rules/{family_b}_s{support}_c{confidence}.csv"
+    path_rules_b = f"output/rules/{family_b}_s{support_b}_c{confidence}.csv"
 
     df_a = pd.read_csv(path_rules_a)
     df_b = pd.read_csv(path_rules_b)
