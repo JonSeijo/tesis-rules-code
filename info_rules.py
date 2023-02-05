@@ -1,3 +1,6 @@
+import ntpath
+import re
+
 from dataclasses import dataclass
 import pandas as pd
 from typing import Sized, Any, Dict, Iterable, List, Tuple, Set, TypeVar
@@ -131,13 +134,15 @@ class RuleMetadata:
     min_confidence: str
     
 
-# FIXME: Works on Linux only!
 def build_rule_metadata_from_rule_filename(filename):
-    s_metadata = filename.split("/")[-1]  # Me quedo con el nombre de archivo
+    s_metadata = ntpath.basename(filename) # Me quedo con el nombre del archivo (lo de despues de ../../ )
     s_metadata = s_metadata[:-4]  # Quito el .csv
 
+    re_family = re.compile("(.*)_len\d")   # Todo antes de "_len\d" es la familia
+    family = re_family.findall(s_metadata)[0]
+    s_metadata = s_metadata.replace(family, "", 1)  # Quito la familia
+
     md = s_metadata.split("_")
-    family = md[0]
     min_len = md[1]
     
     if md[2] == "nomrs":
@@ -153,8 +158,10 @@ def build_rule_metadata_from_rule_filename(filename):
         min_support = md[4][1:] # Remove prefix "s"
         min_confidence = md[5][1:] # Remove prefix "c"
 
+
+
     return RuleMetadata(family, min_len, transaction_type, mr_type, clean_mode, min_support, min_confidence)
-    
+
 
 def build_info_rules_for(family, min_len, mr_type, min_support, min_confidence):
     print(f"build_info_rules_for({family}, {min_len}, {mr_type}, {min_support}, {min_confidence})")

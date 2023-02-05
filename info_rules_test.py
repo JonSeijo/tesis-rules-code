@@ -1,3 +1,5 @@
+# python3 -m unittest info_rules_test.py
+
 import unittest
 
 import info_rules as ir
@@ -84,6 +86,35 @@ class TestInfoRules(unittest.TestCase):
         self.assertEqual(None, metadata.clean_mode)
         self.assertEqual("0.025", metadata.min_support)
         self.assertEqual("0.9", metadata.min_confidence)
+
+
+    def test_build_metadata_long_familyname(self) -> None:
+        metadata = ir.build_rule_metadata_from_rule_filename(
+            "output/rules/NEWAnk_TEST_len4_ALL_min_s0.4_c0.9.csv"
+        )
+
+        self.assertEqual("NEWAnk_TEST", metadata.family)
+        self.assertEqual("len4", metadata.min_len)
+        self.assertEqual("mrs", metadata.transaction_type)
+        self.assertEqual("ALL", metadata.mr_type)
+        self.assertEqual("min", metadata.clean_mode)
+        self.assertEqual("0.4", metadata.min_support)
+        self.assertEqual("0.9", metadata.min_confidence)
+
+
+    def test_build_metadata_long_familyname_v2(self) -> None:
+        metadata = ir.build_rule_metadata_from_rule_filename(
+            "output/rules/NEWAnk_SCRAMBLED_TEST_v2_len4_ALL_min_s0.4_c0.9.csv"
+        )
+
+        self.assertEqual("NEWAnk_SCRAMBLED_TEST_v2", metadata.family)
+        self.assertEqual("len4", metadata.min_len)
+        self.assertEqual("mrs", metadata.transaction_type)
+        self.assertEqual("ALL", metadata.mr_type)
+        self.assertEqual("min", metadata.clean_mode)
+        self.assertEqual("0.4", metadata.min_support)
+        self.assertEqual("0.9", metadata.min_confidence)
+
 
 
 if __name__ == '__main__':
