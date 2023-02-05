@@ -6,13 +6,13 @@ import sys
 import argparse
 import re
 import inspect
-import ntpath
 from pathlib import Path
 from main_code.rulegroup.fastaread import Protein,FastaParser
 from main_code.rulegroup.rulegroup import RuleGroupParser,Rule
 from main_code.rulegroup.rulecoverage import RuleCoverage
 from main_code.rulegroup.rule_stats import RuleStats
-import sqlite3
+
+from db_controller import DBController
 
 from pathos.multiprocessing import ProcessingPool as Pool
 
@@ -75,152 +75,58 @@ def insert_coverage_info_of_proteins(process_num, proteins, rules, dbfilename):
     return toinsert_values
 
 
-class DBController():
-    def __init__(self, db_filename):
-        self.filename = db_filename
-
-    def create_connection(self):
-        """ Creates a new sqlite file for the database """
-        return sqlite3.connect(self.filename)
-
-
-    def create_tables(self):
-        connection = self.create_connection()
-        cursor = connection.cursor()
-
-        # Create table 'protein'
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS protein
-            (idProtein INTEGER PRIMARY KEY, 
-            filename TEXT, 
-            encoding TEXT)''')
-
-
-        # Create table 'rule'
-        
-        # FIXME: id_rule
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS rule
-            (idRule INTEGER PRIMARY KEY,  
-            rule TEXT,
-            antecedent TEXT,
-            consequent TEXT,
-            rule_type TEXT,
-            rule_type_simple TEXT,
-            rule_size INTEGER,
-            count INTEGER,
-            support REAL,
-            confidence REAL,
-            lift REAL,
-            id_rule_metadata INTEGER,
-            FOREIGN KEY (id_rule_metadata)
-                REFERENCES rule_metadata (id_rule_metadata) 
-       )''')
-
-
-        # 'maximalRepeatType': ALL, NE, NN ..
-        # Create table 'rule_metadata'
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS rule_metadata
-            (id_rule_metadata INTEGER PRIMARY KEY,
-            rules_filename TEXT UNIQUE,
-            family TEXT,
-            min_len TEXT,
-            transaction_type TEXT,
-            maximal_repeat_type TEXT,
-            clean_mode TEXT,
-            min_support TEXT,
-            min_confidence TEXT)''')
-
-        # Create table 'rule_coverage'
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS rule_coverage
-            (idRule INTEGER, 
-            idProtein INTEGER, 
-            fraction REAL, 
-            coverageMode INTEGER, 
-            consequentOcurrenceType INTEGER, 
-            antecedentRepeats TEXT, 
-            consequentRepeats TEXT, 
-            consequentRepeatsDistances TEXT, 
-            consequentAvgRepeatDistance REAL, 
-            antecedentRepeatsDistances TEXT, 
-            antecedentAvgRepeatDistances TEXT)''')
-
-        # Create table 'item'
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS item
-            (idItem INTEGER, 
-            item TEXT, 
-            itemFunction INTEGER, 
-            qtyRepeats INTEGER, 
-            avgDistance REAL, 
-            qtyProteins INTEGER)''')
-
-        connection.commit()
-        connection.close()
-
-
 
 
 class GenerateProteinRuleDb(object):
     """docstring for GenerateProteinRuleDb"""
     def __init__(self, nthreads, filename="protein-rules.db"):
         super(GenerateProteinRuleDb, self).__init__()
+
         self.proteins = {}
         self.rules = {}
         self.filename = filename
         self.nthreads = nthreads
 
+        self.db_controller = DBController(self.filename)
+
 
     def createDB(self, proteinPath, ruleFile):
         """ Create a DB from scratch """
-        self.insertProteins(proteinPath)
-        self.insertRules(ruleFile)
+        self.insert_proteins(proteinPath)
+        self.insert_rules_and_metadata(ruleFile)
 
-        # WIP
-        self.readRulesFromDB() 
+        self.load_rules_from_db() 
 
-        self.insertCoverageInfo(self.proteins, self.rules)
-        self.insertItemInfo()
+        self.insert_coverage_info(self.proteins, self.rules)
+        self.insert_item_info()
 
     def addProteins(self, proteinPath):
         """ Add proteins from proteinPath to the database specified """
-        self.insertProteins(proteinPath, True)
-        self.readRulesFromDB()
-        self.insertCoverageInfo(self.proteins, self.rules)
-        self.insertItemInfo()
-
-    def create_connection(self):
-        """ Creates a new sqlite file for the database """
-        return sqlite3.connect(self.filename)
+        self.insert_proteins(proteinPath, True)
+        self.load_rules_from_db()
+        self.insert_coverage_info(self.proteins, self.rules)
+        self.insert_item_info()
 
     def create_tables(self):
-        # TODO: Migrar todo al DBController
-        db_controller = DBController(self.filename)
-        db_controller.create_tables()
+        self.db_controller.create_tables()
 
-    def insertProteins(self, proteinPath, update=False):
-        """ Insert the proteins into the DB """
-        connection = self.create_connection()
-        cursor = connection.cursor()
-
+    def insert_proteins(self, proteinPath, update=False):
         print("Inserting protein info...")
+
         index = 1
         if update:
-            cursor.execute("SELECT MAX(idProtein) FROM protein")
-            index = cursor.fetchone()[0] + 1
+            last_protein_id = self.db_controller.get_last_protein_id()
+            index = last_protein_id + 1
         
         #Read the proteins and insert them.
         for filename in os.listdir(proteinPath):
             fname = filename.strip()
             fp = FastaParser()
             fp.readFile(proteinPath+fname)
-            toInsert = []
+            proteins_to_insert = []
             
             for protein in fp.getProteins():
-
-                toInsert.append({
+                proteins_to_insert.append({
                     'idProtein': index,
                     'encoding': protein.getEncoding(),
                     'filename': fname
@@ -229,41 +135,22 @@ class GenerateProteinRuleDb(object):
                 self.proteins[index] = protein
                 index += 1
 
-            cursor.executemany('''
-                INSERT INTO protein(idProtein, encoding, filename)
-                VALUES (:idProtein, :encoding, :filename)''', 
-                toInsert)
-
-        connection.commit()
-        connection.close()
+            self.db_controller.insert_proteins(proteins_to_insert)
 
 
-
-    def insertRules(self, ruleFile):
+    def insert_rules_and_metadata(self, rule_filename):
         """ Insert the rules into the DB """
+        rules_df = info_rules.build_df_rules_from_path(rule_filename)
+        metadata = info_rules.build_rule_metadata_from_rule_filename(rule_filename)
 
-        connection = self.create_connection()
-
-        # WIP: Este sería el metodo nuevo....
-        # ... el problema es que necesito obtener el index de insersion y la rule info para lo de converage
-        # ... la solucion que se me ocurre es en lo de coverage cargarlo de la db y ya? 
-        # ... a ver si se puede hacer eso ...
-        # ... deberia estar funcoinando (para el add protein) con lo de readFromDB
-        # ... pasa que ahora cambie la tabla y la info, aver...
-
-        rules_df = info_rules.build_df_rules_from_path(ruleFile)
-        metadata = info_rules.build_rule_metadata_from_rule_filename(ruleFile)
-
-        metadata_id = self.insert_rule_metadata(connection, metadata, ruleFile)
-        self.insert_rules(connection, rules_df, metadata_id)
-        connection.close()
+        metadata_id = self.insert_rule_metadata(metadata, rule_filename)
+        self.insert_rules(rules_df, metadata_id)
 
 
     # TODO: "filename_rules" deberia ser parte de la metadata
     # TODO: metadata deberia tener un .to_dict() y resolverlo?
-    def insert_rule_metadata(self, connection, metadata, filename_rules):
+    def insert_rule_metadata(self, metadata, filename_rules):
         print("- Inserting rules metadata")
-        cursor = connection.cursor()
 
         rule_metadata_to_insert = {
             'rules_filename': filename_rules,
@@ -276,31 +163,13 @@ class GenerateProteinRuleDb(object):
             'min_confidence': metadata.min_confidence
         }
 
-        cursor.execute('''
-            INSERT INTO rule_metadata( 
-                rules_filename,
-                family,
-                min_len,
-                transaction_type,
-                maximal_repeat_type,
-                clean_mode,
-                min_support,
-                min_confidence)
-            VALUES (:rules_filename, :family, :min_len, :transaction_type, 
-                :maximal_repeat_type, :clean_mode, :min_support, :min_confidence)''',
-                rule_metadata_to_insert)
+        rule_metadata_last_id = self.db_controller.insert_rule_metadata(rule_metadata_to_insert)
+        return rule_metadata_last_id
 
-        rule_metadata_id = cursor.lastrowid
-        connection.commit()
-
-        return rule_metadata_id
-
-    def insert_rules(self, connection, rules_df, metadata_id):
+    def insert_rules(self, rules_df, metadata_id):
         print("- Inserting rules data")
-        cursor = connection.cursor()
-
+        rules_to_insert = []
         for index, rr in rules_df.iterrows():
-
             rule_to_insert = {
                 'rule': rr['rules'],
                 'antecedent': rr['antecedent'],
@@ -315,38 +184,13 @@ class GenerateProteinRuleDb(object):
                 'id_rule_metadata': metadata_id
             }
 
-            cursor.execute('''
-                INSERT INTO rule(
-                    rule,
-                    antecedent,
-                    consequent,
-                    rule_type,
-                    rule_type_simple,
-                    rule_size,
-                    count,
-                    support,
-                    confidence,
-                    lift,
-                    id_rule_metadata)
-                VALUES (:rule, :antecedent, :consequent, :rule_type, :rule_type_simple,
-                    :rule_size, :count, :support, :confidence, :lift, :id_rule_metadata)''', 
+            rules_to_insert.append(rule_to_insert)
 
-                rule_to_insert)
-
-        connection.commit()
+        self.db_controller.insert_rules(rules_to_insert)
 
 
-
-    def insertCoverageInfo(self, proteins, rules):
+    def insert_coverage_info(self, proteins, rules):
         """ Insert the coverage info for the proteins/rules. Proteins is a dict or Protein and rules is a dict of Rule """
-        connection = self.create_connection()
-        cursor = connection.cursor()
-
-        protein_count = 0
-        protein_amount = len(proteins.items())
-
-        connection.commit()
-        connection.close()
 
         print("Inserting coverage info...")
 
@@ -366,54 +210,22 @@ class GenerateProteinRuleDb(object):
         with Pool(processes=num_buckets) as pool:
             insert_values_proceses = pool.map(lambda ps: insert_coverage_info_of_proteins(*ps), rules_and_proteins_items_list)
 
-        connection = self.create_connection()
-        cursor = connection.cursor()
-
         for insert_values in insert_values_proceses:
-            cursor.executemany('''INSERT INTO rule_coverage(
-                idRule,
-                idProtein,
-                fraction,
-                coverageMode,
-                consequentOcurrenceType,
-                antecedentRepeats,
-                consequentRepeats,
-                consequentRepeatsDistances,
-                consequentAvgRepeatDistance,
-                antecedentRepeatsDistances,
-                antecedentAvgRepeatDistances)
-
-                VALUES (
-                    :idRule,
-                    :idProtein,
-                    :fraction,
-                    :coverageMode,
-                    :consequentOcurrenceType,
-                    :antecedentRepeats,
-                    :consequentRepeats,
-                    :consequentRepeatsDistances,
-                    :consequentAvgRepeatDistance,
-                    :antecedentRepeatsDistances,
-                    :antecedentAvgRepeatDistances)''', insert_values)
-
-        connection.commit()
-        connection.close()
+            self.db_controller.insert_rule_coverage_values(insert_values)
 
 
-    def insertItemInfo(self):
+    def insert_item_info(self):
         """ Add item data to the item table stats """
         print("Inserting item info...")
         rs = RuleStats(self.filename)
-        connection = self.create_connection()
-        cursor = connection.cursor()
-
         consequents = {}
         antecedents = {}
 
-        for row in self.getRuleCoverageIterator():
-            idProtein = row[1]
-            protein = row[2]
-            ruleStr = row[3]
+        for row in self.db_controller.get_rule_coverage_iterator():
+            idProtein = row['idProtein']
+            protein = row['protein']
+            ruleStr = row['ruleStr']
+
             rule = Rule(ruleStr)
 
             if rule.consequent not in consequents:
@@ -446,50 +258,31 @@ class GenerateProteinRuleDb(object):
         idItem = 1
 
         for items in [antecedents.items(), consequents.items()]:
+            items_to_insert = []
             for item, data in items:
-                values = {
+                items_to_insert.append({
                     'idItem': idItem,
                     'item': item,
                     'itemFunction': data["itemFunction"],
                     'qtyRepeats': data["qtyRepeats"],
                     'avgDistance': rs.averageOcurrence(data['avgDistances']),
                     'qtyProteins': len(data["qtyProteins"])
-                }
-
-                cursor.execute('''
-                    INSERT INTO item (idItem, item, itemFunction, qtyRepeats, avgDistance, qtyProteins) 
-                    VALUES (:idItem, :item, :itemFunction, :qtyRepeats, :avgDistance, :qtyProteins)''', 
-                    values)
+                })
                 idItem = idItem + 1
 
+            self.db_controller.insert_items(items_to_insert)
 
-        connection.commit()
-        connection.close()
-
-
-    def getRuleCoverageIterator(self):
-        """ Returns an iterable to the rule coverage table joined with the relevant fields in order to query the stat for rules/items """
-        connection = self.create_connection()
-        res = connection.cursor().execute('''SELECT rc.idRule, rc.idProtein, p.encoding as protein, r.rule as rule FROM rule_coverage rc
-            INNER JOIN protein p on p.idProtein = rc.idProtein
-            INNER JOIN rule r on r.idRule = rc.idRule
-            ''')
-        # connection.close()
-        return res
 
     def addStatsToRuleCoverage(self):
         """ Adds stats to the coverage database """
-        connection = self.create_connection()
-        updateCursor = connection.cursor()
-        for row in self.getRuleCoverageIterator():
+        for row in self.db_controller.get_rule_coverage_iterator():
 
-            idRule = row[0]
-            idProtein = row[1]
-            protein = row[2]
-            ruleStr = row[3]
+            idRule = row['idRule']
+            idProtein = row['idProtein']
+            protein = row['protein']
+            ruleStr = row['ruleStr']
 
             rule = Rule(ruleStr)
-            #self.printDebugInfo(rule, protein)
 
             ocurrenceType = rs.ocurrenceType(rule, protein)
             antecedentRepeats = []
@@ -507,6 +300,8 @@ class GenerateProteinRuleDb(object):
                 antecedentAvgRepeatDistances.append(rs.averageOcurrence(ocurrs))
 
             values = {
+                'idRule': idRule,
+                'idProtein': idProtein,
                 'consequentOcurrenceType': ocurrenceType,
                 'antecedentRepeats': str(antecedentRepeats),
                 'consequentRepeats': str(consequentRepeats),
@@ -514,45 +309,21 @@ class GenerateProteinRuleDb(object):
                 'consequentAvgRepeatDistance': consequentAvgRepeatDistance,
                 'antecedentRepeatsDistances': str(antecedentRepeatsDistances),
                 'antecedentAvgRepeatDistances': str(antecedentAvgRepeatDistances),
-                'idRule': idRule,
-                'idProtein': idProtein
             }
 
-
-            updateCursor.execute('''
-                UPDATE rule_coverage 
-                SET consequentOcurrenceType = :consequentOcurrenceType, 
-                    antecedentRepeats = :antecedentRepeats,
-                    consequentRepeats = :consequentRepeats,
-                    consequentRepeatsDistances = :consequentRepeatsDistances,
-                    consequentAvgRepeatDistance = :consequentAvgRepeatDistance,
-                    antecedentRepeatsDistances = :antecedentRepeatsDistances,
-                    antecedentAvgRepeatDistances = :antecedentAvgRepeatDistances
-                WHERE idRule = :idRule AND idProtein = :idProtein
-                ''', 
-                values)
-
-        connection.commit()
-        connection.close()
+            self.db_controller.update_rule_coverage(rule_coverage_to_update, idRule, idProtein)
 
 
-    def readRulesFromDB(self):
+
+    def load_rules_from_db(self):
         """ Read the rules into the DB """
         print("Loading rules from DB...")
-        connection = self.create_connection()
-        cursor = connection.cursor()
-
-        # TODO: El tema es que usa el simplified_rules ....
-        # Ver cual seria la diferencia
 
         #Read the rules from the DB.
-        for row in cursor.execute('''SELECT * FROM rule'''):
+        for row in self.db_controller.get_rules():
+            rule = Rule(row['rule'])                
+            self.rules[row['idRule']] = rule
 
-            # TODO: Esto anda de casualidad, porque 'rule' es la columna 1. Revisar select!
-            rule = Rule(row[1])                
-            self.rules[row[0]] = rule
-
-        connection.close()
             
 def parameterNotSet(param):
     """ Returns whether the parameter param is set """
