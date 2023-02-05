@@ -56,23 +56,33 @@ def insert_coverage_info_of_proteins(process_num, proteins, rules, dbfilename):
                     antecedentRepeatsDistances.append(ocurrs)
                     antecedentAvgRepeatDistances.append(rs.averageOcurrence(ocurrs))
 
-                toInsert = (idRule, idProtein, fraction, mode, ocurrenceType, str(antecedentRepeats), str(consequentRepeats), str(consequentRepeatsDistances), consequentAvgRepeatDistance, str(antecedentRepeatsDistances), str(antecedentAvgRepeatDistances))
+                toInsert = {
+                    'idRule': idRule, 
+                    'idProtein': idProtein, 
+                    'fraction': fraction, 
+                    'coverageMode': mode, 
+                    'consequentOcurrenceType': ocurrenceType, 
+                    'antecedentRepeats': str(antecedentRepeats), 
+                    'consequentRepeats': str(consequentRepeats), 
+                    'consequentRepeatsDistances': str(consequentRepeatsDistances), 
+                    'consequentAvgRepeatDistance': consequentAvgRepeatDistance, 
+                    'antecedentRepeatsDistances': str(antecedentRepeatsDistances), 
+                    'antecedentAvgRepeatDistances': str(antecedentAvgRepeatDistances)
+                }
+
                 toinsert_values.append(toInsert)
-                # cursor.execute('''INSERT INTO rule_coverage(idRule, idProtein, fraction, coverageMode, consequentOcurrenceType, antecedentRepeats,
-                #     consequentRepeats, consequentRepeatsDistances, consequentAvgRepeatDistance, antecedentRepeatsDistances, antecedentAvgRepeatDistances)
-                #     VALUES (?,?,?,?,?,?,?,?,?,?,?)''', toInsert)
 
     return toinsert_values
 
 
-class GenerateProteinRuleDb(object):
-    """docstring for GenerateProteinRuleDb"""
-    def __init__(self, nthreads, filename="protein-rules.db"):
-        super(GenerateProteinRuleDb, self).__init__()
-        self.proteins = {}
-        self.rules = {}
-        self.filename = filename
-        self.nthreads = nthreads
+class DBController():
+    def __init__(self, db_filename):
+        self.filename = db_filename
+
+    def create_connection(self):
+        """ Creates a new sqlite file for the database """
+        return sqlite3.connect(self.filename)
+
 
     def create_tables(self):
         connection = self.create_connection()
@@ -87,15 +97,6 @@ class GenerateProteinRuleDb(object):
 
 
         # Create table 'rule'
-
-        # TODO: Borrar tabla vieja
-        # cursor.execute('''
-        #     CREATE TABLE IF NOT EXISTS rule
-        #     (idRule INTEGER PRIMARY KEY, 
-        #     rule TEXT, 
-        #     antecedent TEXT, 
-        #     consequent TEXT, 
-        #     ruleType INTEGER)''')
         
         # FIXME: id_rule
         cursor.execute('''
@@ -111,7 +112,10 @@ class GenerateProteinRuleDb(object):
             support REAL,
             confidence REAL,
             lift REAL,
-            id_rule_metadata INTEGER)''')
+            id_rule_metadata INTEGER,
+            FOREIGN KEY (id_rule_metadata)
+                REFERENCES rule_metadata (id_rule_metadata) 
+       )''')
 
 
         # 'maximalRepeatType': ALL, NE, NN ..
@@ -156,6 +160,19 @@ class GenerateProteinRuleDb(object):
         connection.commit()
         connection.close()
 
+
+
+
+class GenerateProteinRuleDb(object):
+    """docstring for GenerateProteinRuleDb"""
+    def __init__(self, nthreads, filename="protein-rules.db"):
+        super(GenerateProteinRuleDb, self).__init__()
+        self.proteins = {}
+        self.rules = {}
+        self.filename = filename
+        self.nthreads = nthreads
+
+
     def createDB(self, proteinPath, ruleFile):
         """ Create a DB from scratch """
         self.insertProteins(proteinPath)
@@ -178,6 +195,11 @@ class GenerateProteinRuleDb(object):
         """ Creates a new sqlite file for the database """
         return sqlite3.connect(self.filename)
 
+    def create_tables(self):
+        # TODO: Migrar todo al DBController
+        db_controller = DBController(self.filename)
+        db_controller.create_tables()
+
     def insertProteins(self, proteinPath, update=False):
         """ Insert the proteins into the DB """
         connection = self.create_connection()
@@ -197,12 +219,20 @@ class GenerateProteinRuleDb(object):
             toInsert = []
             
             for protein in fp.getProteins():
-                toInsert.append((index, protein.getEncoding(), fname))
+
+                toInsert.append({
+                    'idProtein': index,
+                    'encoding': protein.getEncoding(),
+                    'filename': fname
+                })
+
                 self.proteins[index] = protein
                 index += 1
 
-            cursor.executemany('INSERT INTO protein(idProtein, encoding, filename) VALUES (?,?,?)', toInsert)
-
+            cursor.executemany('''
+                INSERT INTO protein(idProtein, encoding, filename)
+                VALUES (:idProtein, :encoding, :filename)''', 
+                toInsert)
 
         connection.commit()
         connection.close()
@@ -225,36 +255,26 @@ class GenerateProteinRuleDb(object):
         metadata = info_rules.build_rule_metadata_from_rule_filename(ruleFile)
 
         metadata_id = self.insert_rule_metadata(connection, metadata, ruleFile)
-
         self.insert_rules(connection, rules_df, metadata_id)
         connection.close()
 
 
-
-        # cursor = connection.cursor()
-
-        # print("Inserting rule info...")
-        # index = 1
-        # #Read the rules and insert them.
-        # with open(ruleFile, 'r') as infile:
-        #     for line in infile:
-        #         rule = Rule(line)
-        #         self.rules[index] = rule
-        #         toInsert = (index, line.strip(), ', '.join(rule.antecedent), rule.consequent, rule.getRuleType())
-        #         cursor.execute('INSERT INTO rule(idRule, rule, antecedent, consequent, ruleType) VALUES (?,?,?,?,?)', toInsert)
-        #         index += 1
-
-        # connection.commit()
-        # connection.close()
-
+    # TODO: "filename_rules" deberia ser parte de la metadata
+    # TODO: metadata deberia tener un .to_dict() y resolverlo?
     def insert_rule_metadata(self, connection, metadata, filename_rules):
-        
         print("- Inserting rules metadata")
-        
-        # rule_metadata = (filename_rules, family, 
-        #     min_support, min_confidence, min_len, mr_type)
-        
         cursor = connection.cursor()
+
+        rule_metadata_to_insert = {
+            'rules_filename': filename_rules,
+            'family': metadata.family,
+            'min_len': metadata.min_len,
+            'transaction_type': metadata.transaction_type,
+            'maximal_repeat_type': metadata.mr_type,
+            'clean_mode': metadata.clean_mode,
+            'min_support': metadata.min_support,
+            'min_confidence': metadata.min_confidence
+        }
 
         cursor.execute('''
             INSERT INTO rule_metadata( 
@@ -266,36 +286,34 @@ class GenerateProteinRuleDb(object):
                 clean_mode,
                 min_support,
                 min_confidence)
-            VALUES (?,?,?,?,?,?,?,?)''', (
-                filename_rules, metadata.family, metadata.min_len, metadata.transaction_type,
-                metadata.mr_type, metadata.clean_mode, metadata.min_support, metadata.min_confidence))
+            VALUES (:rules_filename, :family, :min_len, :transaction_type, 
+                :maximal_repeat_type, :clean_mode, :min_support, :min_confidence)''',
+                rule_metadata_to_insert)
 
         rule_metadata_id = cursor.lastrowid
-        
         connection.commit()
 
         return rule_metadata_id
 
-    # TODO: Podria haber usado algo como pandas.DataFrame.to_sql? Si
     def insert_rules(self, connection, rules_df, metadata_id):
         print("- Inserting rules data")
         cursor = connection.cursor()
 
         for index, rr in rules_df.iterrows():
 
-            rule_to_insert = (
-                rr['rules'],
-                rr['antecedent'],
-                rr['consequent'],
-                rr['ruletype'],
-                rr['ruletype_simple'],
-                rr['rule_size'],
-                rr['count'],
-                rr['support'],
-                rr['confidence'],
-                rr['lift'],
-                metadata_id
-            )
+            rule_to_insert = {
+                'rule': rr['rules'],
+                'antecedent': rr['antecedent'],
+                'consequent': rr['consequent'],
+                'rule_type': rr['ruletype'],
+                'rule_type_simple': rr['ruletype_simple'],
+                'rule_size': rr['rule_size'],
+                'count': rr['count'],
+                'support': rr['support'],
+                'confidence': rr['confidence'],
+                'lift': rr['lift'],
+                'id_rule_metadata': metadata_id
+            }
 
             cursor.execute('''
                 INSERT INTO rule(
@@ -310,7 +328,10 @@ class GenerateProteinRuleDb(object):
                     confidence,
                     lift,
                     id_rule_metadata)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?)''', rule_to_insert)
+                VALUES (:rule, :antecedent, :consequent, :rule_type, :rule_type_simple,
+                    :rule_size, :count, :support, :confidence, :lift, :id_rule_metadata)''', 
+
+                rule_to_insert)
 
         connection.commit()
 
@@ -349,9 +370,31 @@ class GenerateProteinRuleDb(object):
         cursor = connection.cursor()
 
         for insert_values in insert_values_proceses:
-            cursor.executemany('''INSERT INTO rule_coverage(idRule, idProtein, fraction, coverageMode, consequentOcurrenceType, antecedentRepeats,
-                consequentRepeats, consequentRepeatsDistances, consequentAvgRepeatDistance, antecedentRepeatsDistances, antecedentAvgRepeatDistances)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?)''', insert_values)
+            cursor.executemany('''INSERT INTO rule_coverage(
+                idRule,
+                idProtein,
+                fraction,
+                coverageMode,
+                consequentOcurrenceType,
+                antecedentRepeats,
+                consequentRepeats,
+                consequentRepeatsDistances,
+                consequentAvgRepeatDistance,
+                antecedentRepeatsDistances,
+                antecedentAvgRepeatDistances)
+
+                VALUES (
+                    :idRule,
+                    :idProtein,
+                    :fraction,
+                    :coverageMode,
+                    :consequentOcurrenceType,
+                    :antecedentRepeats,
+                    :consequentRepeats,
+                    :consequentRepeatsDistances,
+                    :consequentAvgRepeatDistance,
+                    :antecedentRepeatsDistances,
+                    :antecedentAvgRepeatDistances)''', insert_values)
 
         connection.commit()
         connection.close()
@@ -400,20 +443,25 @@ class GenerateProteinRuleDb(object):
                         antecedents[ant]["avgDistances"].append(avgRepeatDistance)
 
 
-        stmt = '''INSERT INTO item (idItem, item, itemFunction, qtyRepeats, avgDistance, qtyProteins) 
-            values (?,?,?,?,?,?)
-            '''
-
         idItem = 1
-        for item, data in antecedents.items():
-            values = (idItem, item, data["itemFunction"], data["qtyRepeats"], rs.averageOcurrence(data['avgDistances']), len(data["qtyProteins"]))
-            cursor.execute(stmt, values)
-            idItem = idItem + 1
 
-        for item, data in consequents.items():
-            values = (idItem, item, data["itemFunction"], data["qtyRepeats"], rs.averageOcurrence(data['avgDistances']), len(data["qtyProteins"]))
-            idItem = idItem + 1
-            cursor.execute(stmt, values)
+        for items in [antecedents.items(), consequents.items()]:
+            for item, data in items:
+                values = {
+                    'idItem': idItem,
+                    'item': item,
+                    'itemFunction': data["itemFunction"],
+                    'qtyRepeats': data["qtyRepeats"],
+                    'avgDistance': rs.averageOcurrence(data['avgDistances']),
+                    'qtyProteins': len(data["qtyProteins"])
+                }
+
+                cursor.execute('''
+                    INSERT INTO item (idItem, item, itemFunction, qtyRepeats, avgDistance, qtyProteins) 
+                    VALUES (:idItem, :item, :itemFunction, :qtyRepeats, :avgDistance, :qtyProteins)''', 
+                    values)
+                idItem = idItem + 1
+
 
         connection.commit()
         connection.close()
@@ -443,17 +491,6 @@ class GenerateProteinRuleDb(object):
             rule = Rule(ruleStr)
             #self.printDebugInfo(rule, protein)
 
-            modifyStmt = '''UPDATE rule_coverage 
-                SET consequentOcurrenceType = ?, 
-                    antecedentRepeats = ?,
-                    consequentRepeats = ?,
-                    consequentRepeatsDistances = ?,
-                    consequentAvgRepeatDistance = ?,
-                    antecedentRepeatsDistances = ?,
-                    antecedentAvgRepeatDistances = ?
-                WHERE idRule = ? AND idProtein = ?
-                '''
-
             ocurrenceType = rs.ocurrenceType(rule, protein)
             antecedentRepeats = []
             antecedentRepeatsDistances = []
@@ -469,9 +506,31 @@ class GenerateProteinRuleDb(object):
                 antecedentRepeatsDistances.append(ocurrs)
                 antecedentAvgRepeatDistances.append(rs.averageOcurrence(ocurrs))
 
+            values = {
+                'consequentOcurrenceType': ocurrenceType,
+                'antecedentRepeats': str(antecedentRepeats),
+                'consequentRepeats': str(consequentRepeats),
+                'consequentRepeatsDistances': str(consequentRepeatsDistances),
+                'consequentAvgRepeatDistance': consequentAvgRepeatDistance,
+                'antecedentRepeatsDistances': str(antecedentRepeatsDistances),
+                'antecedentAvgRepeatDistances': str(antecedentAvgRepeatDistances),
+                'idRule': idRule,
+                'idProtein': idProtein
+            }
 
-            values = (ocurrenceType, str(antecedentRepeats), str(consequentRepeats), str(consequentRepeatsDistances), consequentAvgRepeatDistance, str(antecedentRepeatsDistances), str(antecedentAvgRepeatDistances), idRule, idProtein)
-            updateCursor.execute(modifyStmt, values)
+
+            updateCursor.execute('''
+                UPDATE rule_coverage 
+                SET consequentOcurrenceType = :consequentOcurrenceType, 
+                    antecedentRepeats = :antecedentRepeats,
+                    consequentRepeats = :consequentRepeats,
+                    consequentRepeatsDistances = :consequentRepeatsDistances,
+                    consequentAvgRepeatDistance = :consequentAvgRepeatDistance,
+                    antecedentRepeatsDistances = :antecedentRepeatsDistances,
+                    antecedentAvgRepeatDistances = :antecedentAvgRepeatDistances
+                WHERE idRule = :idRule AND idProtein = :idProtein
+                ''', 
+                values)
 
         connection.commit()
         connection.close()
