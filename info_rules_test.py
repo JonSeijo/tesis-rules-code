@@ -65,10 +65,11 @@ class TestInfoRules(unittest.TestCase):
             "output/rules/TPR1_len4_ALL_sub_s0.025_c0.9.csv"
         )
 
+        self.assertEqual("TPR1_len4_ALL_sub_s0.025_c0.9", metadata.rules_filename)
         self.assertEqual("TPR1", metadata.family)
         self.assertEqual("len4", metadata.min_len)
         self.assertEqual("mrs", metadata.transaction_type)
-        self.assertEqual("ALL", metadata.mr_type)
+        self.assertEqual("ALL", metadata.maximal_repeat_type)
         self.assertEqual("sub", metadata.clean_mode)
         self.assertEqual("0.025", metadata.min_support)
         self.assertEqual("0.9", metadata.min_confidence)
@@ -79,10 +80,11 @@ class TestInfoRules(unittest.TestCase):
             "output/rules/TPR1_len4_nomrs_s0.025_c0.9.csv"
         )
 
+        self.assertEqual("TPR1_len4_nomrs_s0.025_c0.9", metadata.rules_filename)
         self.assertEqual("TPR1", metadata.family)
         self.assertEqual("len4", metadata.min_len)
         self.assertEqual("nomrs", metadata.transaction_type)
-        self.assertEqual(None, metadata.mr_type)
+        self.assertEqual(None, metadata.maximal_repeat_type)
         self.assertEqual(None, metadata.clean_mode)
         self.assertEqual("0.025", metadata.min_support)
         self.assertEqual("0.9", metadata.min_confidence)
@@ -93,10 +95,11 @@ class TestInfoRules(unittest.TestCase):
             "output/rules/NEWAnk_TEST_len4_ALL_min_s0.4_c0.9.csv"
         )
 
+        self.assertEqual("NEWAnk_TEST_len4_ALL_min_s0.4_c0.9", metadata.rules_filename)
         self.assertEqual("NEWAnk_TEST", metadata.family)
         self.assertEqual("len4", metadata.min_len)
         self.assertEqual("mrs", metadata.transaction_type)
-        self.assertEqual("ALL", metadata.mr_type)
+        self.assertEqual("ALL", metadata.maximal_repeat_type)
         self.assertEqual("min", metadata.clean_mode)
         self.assertEqual("0.4", metadata.min_support)
         self.assertEqual("0.9", metadata.min_confidence)
@@ -110,7 +113,7 @@ class TestInfoRules(unittest.TestCase):
         self.assertEqual("NEWAnk_SCRAMBLED_TEST_v2", metadata.family)
         self.assertEqual("len4", metadata.min_len)
         self.assertEqual("mrs", metadata.transaction_type)
-        self.assertEqual("ALL", metadata.mr_type)
+        self.assertEqual("ALL", metadata.maximal_repeat_type)
         self.assertEqual("min", metadata.clean_mode)
         self.assertEqual("0.4", metadata.min_support)
         self.assertEqual("0.9", metadata.min_confidence)

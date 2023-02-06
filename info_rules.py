@@ -125,18 +125,21 @@ def build_df_rules_from_path(path: str) -> pd.DataFrame:
 
 @dataclass
 class RuleMetadata:
+    rules_filename: str
     family: str
     min_len: str
     transaction_type: str
-    mr_type: str
+    maximal_repeat_type: str
     clean_mode: str
     min_support: str
     min_confidence: str
     
 
-def build_rule_metadata_from_rule_filename(filename):
-    s_metadata = ntpath.basename(filename) # Me quedo con el nombre del archivo (lo de despues de ../../ )
+def build_rule_metadata_from_rule_filename(rules_filename_path):
+    s_metadata = ntpath.basename(rules_filename_path) # Me quedo con el nombre del archivo (lo de despues de ../../ )
     s_metadata = s_metadata[:-4]  # Quito el .csv
+
+    rules_filename = s_metadata
 
     re_family = re.compile("(.*)_len\d")   # Todo antes de "_len\d" es la familia
     family = re_family.findall(s_metadata)[0]
@@ -147,20 +150,19 @@ def build_rule_metadata_from_rule_filename(filename):
     
     if md[2] == "nomrs":
         transaction_type = md[2]
-        mr_type = None
+        maximal_repeat_type = None
         clean_mode = None
         min_support = md[3][1:] # Remove prefix "s"
         min_confidence = md[4][1:] # Remove prefix "c"
     else:
         transaction_type = "mrs"
-        mr_type = md[2]  
+        maximal_repeat_type = md[2]  
         clean_mode = md[3]
         min_support = md[4][1:] # Remove prefix "s"
         min_confidence = md[5][1:] # Remove prefix "c"
 
 
-
-    return RuleMetadata(family, min_len, transaction_type, mr_type, clean_mode, min_support, min_confidence)
+    return RuleMetadata(rules_filename, family, min_len, transaction_type, maximal_repeat_type, clean_mode, min_support, min_confidence)
 
 
 def build_info_rules_for(family, min_len, mr_type, min_support, min_confidence):
