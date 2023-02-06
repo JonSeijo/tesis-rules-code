@@ -131,9 +131,9 @@ class GenerateProteinRuleDb(object):
         else:
             print("Loading and inserting proteins from .fasta files")
             last_protein_id = self.db_controller.get_last_protein_id()
+
             index = last_protein_id + 1
 
-            index = 1
             #Read the fasta proteins from files, insert them and load them.
             for filename_fasta in os.listdir(path_protein):
                 fname = filename_fasta.strip()
