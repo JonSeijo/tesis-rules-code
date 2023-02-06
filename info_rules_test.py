@@ -67,7 +67,7 @@ class TestInfoRules(unittest.TestCase):
 
         self.assertEqual("TPR1_len4_ALL_sub_s0.025_c0.9", metadata.rules_filename)
         self.assertEqual("TPR1", metadata.family)
-        self.assertEqual("len4", metadata.min_len)
+        self.assertEqual("4", metadata.min_len)
         self.assertEqual("mrs", metadata.transaction_type)
         self.assertEqual("ALL", metadata.maximal_repeat_type)
         self.assertEqual("sub", metadata.clean_mode)
@@ -82,7 +82,7 @@ class TestInfoRules(unittest.TestCase):
 
         self.assertEqual("TPR1_len4_nomrs_s0.025_c0.9", metadata.rules_filename)
         self.assertEqual("TPR1", metadata.family)
-        self.assertEqual("len4", metadata.min_len)
+        self.assertEqual("4", metadata.min_len)
         self.assertEqual("nomrs", metadata.transaction_type)
         self.assertEqual(None, metadata.maximal_repeat_type)
         self.assertEqual(None, metadata.clean_mode)
@@ -97,7 +97,7 @@ class TestInfoRules(unittest.TestCase):
 
         self.assertEqual("NEWAnk_TEST_len4_ALL_min_s0.4_c0.9", metadata.rules_filename)
         self.assertEqual("NEWAnk_TEST", metadata.family)
-        self.assertEqual("len4", metadata.min_len)
+        self.assertEqual("4", metadata.min_len)
         self.assertEqual("mrs", metadata.transaction_type)
         self.assertEqual("ALL", metadata.maximal_repeat_type)
         self.assertEqual("min", metadata.clean_mode)
@@ -107,11 +107,11 @@ class TestInfoRules(unittest.TestCase):
 
     def test_build_metadata_long_familyname_v2(self) -> None:
         metadata = ir.build_rule_metadata_from_rule_filename(
-            "output/rules/NEWAnk_SCRAMBLED_TEST_v2_len4_ALL_min_s0.4_c0.9.csv"
+            "output/rules/NEWAnk_SCRAMBLED_TEST_v2_len6_ALL_min_s0.4_c0.9.csv"
         )
 
         self.assertEqual("NEWAnk_SCRAMBLED_TEST_v2", metadata.family)
-        self.assertEqual("len4", metadata.min_len)
+        self.assertEqual("6", metadata.min_len)
         self.assertEqual("mrs", metadata.transaction_type)
         self.assertEqual("ALL", metadata.maximal_repeat_type)
         self.assertEqual("min", metadata.clean_mode)

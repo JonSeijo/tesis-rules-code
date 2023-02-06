@@ -146,7 +146,7 @@ def build_rule_metadata_from_rule_filename(rules_filename_path):
     s_metadata = s_metadata.replace(family, "", 1)  # Quito la familia
 
     md = s_metadata.split("_")
-    min_len = md[1]
+    min_len = md[1].replace("len", "")  # "len4" -> "4"
     
     if md[2] == "nomrs":
         transaction_type = md[2]
