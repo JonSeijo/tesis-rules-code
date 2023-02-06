@@ -14,7 +14,7 @@ from main_code.rulegroup.rulegroup import Rule, ClusterRule,ClusterRuleMatch,Ocu
 from main_code.rulegroup.base_graph import GraphvizGraph, SimpleGraph
 from main_code.rulegroup.metrics import StringMetrics
 
-
+# TODO: jonno: Refactorizar para que use el nuevo DBController
 class RuleStats(object):
     """ Compute stats for a set of rules. Modify the DB adding the
     neccessary data. Computes distance between repetitions, average repitions for both
@@ -136,7 +136,7 @@ class RuleStats(object):
         connection = sqlite3.connect(self.filename)
         cursor = connection.cursor()
         res = cursor.execute('''SELECT DISTINCT(item) FROM item''')
-        # connection.close() # jonno: Originalmente discomentado
+        # connection.close() # jonno: Originalmente descomentado en Enriquez
         return res
 
     def ruleIterator(self):
@@ -144,7 +144,7 @@ class RuleStats(object):
         connection = sqlite3.connect(self.filename)
         cursor = connection.cursor()
         res = cursor.execute('''SELECT rule FROM rule''')
-        # connection.close() # jonno: Originalmente discomentado
+        # connection.close() # jonno: Originalmente descomentado en Enriquez
         return res
 
 
@@ -226,7 +226,7 @@ class RuleStats(object):
         groupedItems = {}
         replacementMap = {}
         
-        #items = self.getItemsFromCoverages()
+        #items = self.getItemsFromCoverages() # jonno: Originalmente comentado en Enriquez
         items = self.getItemsFromRules()
 
         if groupedByEditDistance:

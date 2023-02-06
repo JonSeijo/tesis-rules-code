@@ -16,7 +16,8 @@ class DBController():
         # Create table 'protein'
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS protein
-            (idProtein INTEGER PRIMARY KEY, 
+            (idProtein INTEGER PRIMARY KEY,
+            family TEXT,
             filename TEXT, 
             encoding TEXT)''')
 
@@ -43,7 +44,7 @@ class DBController():
        )''')
 
 
-        # 'maximalRepeatType': ALL, NE, NN ..
+        # 'maximal_repeat_type': ALL, NE, NN ..
         # Create table 'rule_metadata'
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS rule_metadata
@@ -127,8 +128,8 @@ class DBController():
         cursor = connection.cursor()
 
         cursor.executemany('''
-            INSERT INTO protein(idProtein, encoding, filename)
-            VALUES (:idProtein, :encoding, :filename)''', 
+            INSERT INTO protein(idProtein, family, encoding, filename)
+            VALUES (:idProtein, :family, :encoding, :filename)''', 
             proteins_to_insert)
 
         connection.commit()
@@ -221,7 +222,31 @@ class DBController():
         connection.commit()
         connection.close()
 
-        return id_max_protein
+        return id_max_protein if id_max_protein != None else 0 
+
+    def get_proteins_of_family(self, family):
+        connection = self.create_connection()
+        cursor = connection.cursor()
+
+        rows = cursor.execute('''
+            SELECT idProtein, encoding, filename
+            FROM protein
+            WHERE family = :family
+            ''', [family])
+
+        proteins_of_family = []
+        for row in rows:
+            proteins_of_family.append({
+                'idProtein': row[0],
+                'encoding': row[1],
+                'filename': row[2],
+            })
+        
+
+        connection.commit()
+        connection.close()
+
+        return proteins_of_family
 
 
     def update_rule_coverage(self, rule_coverage_to_update, idRule, idProtein):

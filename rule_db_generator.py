@@ -7,7 +7,7 @@ import argparse
 import re
 import inspect
 from pathlib import Path
-from main_code.rulegroup.fastaread import Protein,FastaParser
+from main_code.rulegroup.fastaread import Protein, FastaParser
 from main_code.rulegroup.rulegroup import RuleGroupParser,Rule
 from main_code.rulegroup.rulecoverage import RuleCoverage
 from main_code.rulegroup.rule_stats import RuleStats
@@ -21,6 +21,10 @@ import info_rules
 
 
 def insert_coverage_info_of_proteins(process_num, proteins, rules, dbfilename):
+    """
+    proteins: Dict[idProtein, Protein]
+    rules: Dict[idRule, Rule]
+    """
     rs = RuleStats(dbfilename)
     cov = RuleCoverage("","","test.txt","vector")
 
@@ -56,7 +60,7 @@ def insert_coverage_info_of_proteins(process_num, proteins, rules, dbfilename):
                     antecedentRepeatsDistances.append(ocurrs)
                     antecedentAvgRepeatDistances.append(rs.averageOcurrence(ocurrs))
 
-                toInsert = {
+                to_insert = {
                     'idRule': idRule, 
                     'idProtein': idProtein, 
                     'fraction': fraction, 
@@ -70,7 +74,7 @@ def insert_coverage_info_of_proteins(process_num, proteins, rules, dbfilename):
                     'antecedentAvgRepeatDistances': str(antecedentAvgRepeatDistances)
                 }
 
-                toinsert_values.append(toInsert)
+                toinsert_values.append(to_insert)
 
     return toinsert_values
 
@@ -79,85 +83,96 @@ def insert_coverage_info_of_proteins(process_num, proteins, rules, dbfilename):
 
 class GenerateProteinRuleDb(object):
     """docstring for GenerateProteinRuleDb"""
-    def __init__(self, nthreads, filename="protein-rules.db"):
+    def __init__(self, nthreads, db_filename="protein-rules.db"):
         super(GenerateProteinRuleDb, self).__init__()
 
         self.proteins = {}
         self.rules = {}
-        self.filename = filename
+        self.db_filename = db_filename
         self.nthreads = nthreads
 
-        self.db_controller = DBController(self.filename)
+        self.db_controller = DBController(self.db_filename)
+        self.create_tables()
 
 
-    def createDB(self, proteinPath, ruleFile):
-        """ Create a DB from scratch """
-        self.insert_proteins(proteinPath)
-        self.insert_rules_and_metadata(ruleFile)
+    def update_db(self, protein_path, rule_filename):
+        rule_metadata = info_rules.build_rule_metadata_from_rule_filename(rule_filename)
+
+        self.insert_and_load_proteins(protein_path, rule_metadata.family)
+        self.insert_rules_and_metadata(rule_filename, rule_metadata)
 
         self.load_rules_from_db() 
-
-        self.insert_coverage_info(self.proteins, self.rules)
-        self.insert_item_info()
-
-    def addProteins(self, proteinPath):
-        """ Add proteins from proteinPath to the database specified """
-        self.insert_proteins(proteinPath, True)
-        self.load_rules_from_db()
-        self.insert_coverage_info(self.proteins, self.rules)
+        self.insert_coverage_info()
         self.insert_item_info()
 
     def create_tables(self):
         self.db_controller.create_tables()
 
-    def insert_proteins(self, proteinPath, update=False):
-        print("Inserting protein info...")
 
-        index = 1
-        if update:
+    def insert_and_load_proteins(self, path_protein, family):
+        print("insert_and_load_proteins...")
+        print("path_protein", path_protein)
+        print("family", family)
+
+        # if family exists in protein db, only load them
+        db_proteins = self.db_controller.get_proteins_of_family(family)
+
+        print(f"Encontre {len(db_proteins)} proteinas de esa familia...")
+
+        if len(db_proteins) > 0:
+            print("!! Protein family already exists !!")
+            print(" Loading existing protein family...")
+            for db_protein in db_proteins:
+                self.proteins[db_protein['idProtein']] = Protein(
+                    db_protein['encoding'], '', db_protein['filename'])
+
+            return
+
+        else:
+            print("Loading and inserting proteins from .fasta files")
             last_protein_id = self.db_controller.get_last_protein_id()
             index = last_protein_id + 1
-        
-        #Read the proteins and insert them.
-        for filename in os.listdir(proteinPath):
-            fname = filename.strip()
-            fp = FastaParser()
-            fp.readFile(proteinPath+fname)
-            proteins_to_insert = []
-            
-            for protein in fp.getProteins():
-                proteins_to_insert.append({
-                    'idProtein': index,
-                    'encoding': protein.getEncoding(),
-                    'filename': fname
-                })
 
-                self.proteins[index] = protein
-                index += 1
+            index = 1
+            #Read the fasta proteins from files, insert them and load them.
+            for filename_fasta in os.listdir(path_protein):
+                fname = filename_fasta.strip()
+                fp = FastaParser()
+                fp.readFile(os.path.join(path_protein, fname))
 
-            self.db_controller.insert_proteins(proteins_to_insert)
+                proteins_to_insert = []
+                for protein in fp.getProteins():
+                    proteins_to_insert.append({
+                        'idProtein': index,
+                        'family': family,
+                        'encoding': protein.getEncoding(),
+                        'filename': fname
+                    })
+
+                    self.proteins[index] = protein
+                    index += 1
+
+                self.db_controller.insert_proteins(proteins_to_insert)
 
 
-    def insert_rules_and_metadata(self, rule_filename):
+    def insert_rules_and_metadata(self, rule_filename, metadata):
         """ Insert the rules into the DB """
         rules_df = info_rules.build_df_rules_from_path(rule_filename)
-        metadata = info_rules.build_rule_metadata_from_rule_filename(rule_filename)
 
-        metadata_id = self.insert_rule_metadata(metadata, rule_filename)
+        metadata_id = self.insert_rule_metadata(metadata)
         self.insert_rules(rules_df, metadata_id)
 
 
-    # TODO: "filename_rules" deberia ser parte de la metadata
     # TODO: metadata deberia tener un .to_dict() y resolverlo?
-    def insert_rule_metadata(self, metadata, filename_rules):
+    def insert_rule_metadata(self, metadata):
         print("- Inserting rules metadata")
 
         rule_metadata_to_insert = {
-            'rules_filename': filename_rules,
+            'rules_filename': metadata.rules_filename,
             'family': metadata.family,
             'min_len': metadata.min_len,
             'transaction_type': metadata.transaction_type,
-            'maximal_repeat_type': metadata.mr_type,
+            'maximal_repeat_type': metadata.maximal_repeat_type,
             'clean_mode': metadata.clean_mode,
             'min_support': metadata.min_support,
             'min_confidence': metadata.min_confidence
@@ -189,8 +204,12 @@ class GenerateProteinRuleDb(object):
         self.db_controller.insert_rules(rules_to_insert)
 
 
-    def insert_coverage_info(self, proteins, rules):
-        """ Insert the coverage info for the proteins/rules. Proteins is a dict or Protein and rules is a dict of Rule """
+    def insert_coverage_info(self):
+        """ Insert the coverage info for the proteins/rules. 
+        self.proteins is a dict of Protein and self.rules is a dict of Rule """
+
+        if len(self.proteins) == 0 or len(self.rules) == 0:
+            raise Exception("No proteins or rules loaded before calling insert_coverage_info")
 
         print("Inserting coverage info...")
 
@@ -201,11 +220,14 @@ class GenerateProteinRuleDb(object):
         num_buckets = self.nthreads # Amount of processes
         proteins_items_list = [[] for _ in range(num_buckets)]
 
-        for idProtein, protein in proteins.items():
+        for idProtein, protein in self.proteins.items():
             proteins_items_list[curr_bucket].append((idProtein, protein))
             curr_bucket = (curr_bucket + 1) % num_buckets
 
-        rules_and_proteins_items_list = [ [process_num, protein_list, rules, self.filename] for process_num, protein_list in enumerate(proteins_items_list) ]
+        rules_and_proteins_items_list = [ 
+            [process_num, protein_list, self.rules, self.db_filename] 
+            for process_num, protein_list in enumerate(proteins_items_list) 
+        ]
 
         with Pool(processes=num_buckets) as pool:
             insert_values_proceses = pool.map(lambda ps: insert_coverage_info_of_proteins(*ps), rules_and_proteins_items_list)
@@ -217,7 +239,7 @@ class GenerateProteinRuleDb(object):
     def insert_item_info(self):
         """ Add item data to the item table stats """
         print("Inserting item info...")
-        rs = RuleStats(self.filename)
+        rs = RuleStats(self.db_filename)
         consequents = {}
         antecedents = {}
 
@@ -273,7 +295,8 @@ class GenerateProteinRuleDb(object):
             self.db_controller.insert_items(items_to_insert)
 
 
-    def addStatsToRuleCoverage(self):
+    # TODO: Borrar? Esto no se usa, para que estaba?
+    def updateRuleCoverageStats(self):
         """ Adds stats to the coverage database """
         for row in self.db_controller.get_rule_coverage_iterator():
 
@@ -290,7 +313,6 @@ class GenerateProteinRuleDb(object):
             antecedentAvgRepeatDistances = []
             consequentRepeats = rs.getOcurrencesIndexes(rule.consequent, protein)
             consequentRepeatsDistances = rs.distanceBetweenConsecutiveRepeats(rule.consequent, protein)
-            
             consequentAvgRepeatDistance = rs.averageOcurrence(consequentRepeatsDistances)
 
             for ant in rule.antecedent:
@@ -325,7 +347,7 @@ class GenerateProteinRuleDb(object):
             self.rules[row['idRule']] = rule
 
             
-def parameterNotSet(param):
+def parameter_not_set(param):
     """ Returns whether the parameter param is set """
     return param is None or len(param) == 0
 
@@ -333,13 +355,16 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--proteinPath", help="The path that contains the proteins to be analized", type=str)
     parser.add_argument("--ruleFile", help="The file with the rules to check for coverage against the proteins", type=str)
-    parser.add_argument('--add', help="Add rules/proteins to the existing sqlite file", type=bool)
     parser.add_argument('--filename', help="Filename for the SQLite database", type=str, default="protein-rules.db")
     parser.add_argument('--threads', help="Amount of threads", type=int, default=4)
     args = parser.parse_args()
 
-    if parameterNotSet(args.proteinPath):
+    if parameter_not_set(args.proteinPath):
         print("ERROR: proteinPath required and not set!! - Exiting...")
+        sys.exit(-1)
+
+    if parameter_not_set(args.ruleFile):
+        print("ERROR: ruleFile required and not set!! - Exiting...")
         sys.exit(-1)
 
     print("================================================")
@@ -347,17 +372,13 @@ def main():
     print()
     print("proteinPath:", args.proteinPath)
     print("ruleFile:   ", args.ruleFile)
-    print("add:        ", args.add)
     print("filename:   ", args.filename)
     print("threads:    ", args.threads)
     print("================================================")
 
     rc = GenerateProteinRuleDb(args.threads, args.filename)
-    rc.create_tables()
-    if args.add:
-        rc.addProteins(args.proteinPath)
-    else:
-        rc.createDB(args.proteinPath, args.ruleFile)
+    
+    rc.update_db(args.proteinPath, args.ruleFile)
 
 
 if __name__ == "__main__":
