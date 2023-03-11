@@ -51,5 +51,5 @@ python3 logo_analysis.py -sto_path tesis-jmenriquez-code/out_parse_rules_jm_ank 
 - Generacion de db: `rule_db_generator.py`
 
 ```bash
-python3 -m rule_db_generator --proteinPath=../db/canonicalFamilyDataset/familyDataset/TPR1/ --ruleFile=output/rules/TPR1_len4_ALL_sub_s0.025_c0.9.csv --filename=output/dbs/db_test.db
+python3 -m rule_db_generator --protein_path=../db/canonicalFamilyDataset/familyDataset/TPR1/ --rule_file=output/rules/TPR1_len4_ALL_sub_s0.025_c0.9.csv --filename=output/dbs/db_test.db
 ``` 

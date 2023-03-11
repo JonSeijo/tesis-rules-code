@@ -353,32 +353,32 @@ def parameter_not_set(param):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--proteinPath", help="The path that contains the proteins to be analized", type=str)
-    parser.add_argument("--ruleFile", help="The file with the rules to check for coverage against the proteins", type=str)
+    parser.add_argument("--protein_path", help="The path that contains the proteins to be analized", type=str)
+    parser.add_argument("--rule_file", help="The file with the rules to check for coverage against the proteins", type=str)
     parser.add_argument('--filename', help="Filename for the SQLite database", type=str, default="protein-rules.db")
     parser.add_argument('--threads', help="Amount of threads", type=int, default=4)
     args = parser.parse_args()
 
-    if parameter_not_set(args.proteinPath):
-        print("ERROR: proteinPath required and not set!! - Exiting...")
+    if parameter_not_set(args.protein_path):
+        print("ERROR: protein_path required and not set!! - Exiting...")
         sys.exit(-1)
 
-    if parameter_not_set(args.ruleFile):
-        print("ERROR: ruleFile required and not set!! - Exiting...")
+    if parameter_not_set(args.rule_file):
+        print("ERROR: rule_file required and not set!! - Exiting...")
         sys.exit(-1)
 
     print("================================================")
     print("Running rule_db_generator with arguments:")
     print()
-    print("proteinPath:", args.proteinPath)
-    print("ruleFile:   ", args.ruleFile)
+    print("protein_path:", args.protein_path)
+    print("rule_file:   ", args.rule_file)
     print("filename:   ", args.filename)
     print("threads:    ", args.threads)
     print("================================================")
 
     rc = GenerateProteinRuleDb(args.threads, args.filename)
     
-    rc.update_db(args.proteinPath, args.ruleFile)
+    rc.update_db(args.protein_path, args.rule_file)
 
 
 if __name__ == "__main__":
