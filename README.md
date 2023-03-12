@@ -2,14 +2,13 @@
 
 # Estructura
 
- #TODO: repensar y reorganizar codigo existente
+- `maximal-repeats-transactions/`: repositorio para generar transacciones de maximal repeats a partir de una familia de proteinas. Codigo original de pturjanski
 
-- `maximal-repeats-transactions/`: repositorio para generar transacciones de maximal repeats a partir de una familia de proteinas. 
+- `main_code`: generador de reglas, analisis posteriores y generador de db para el visualizador. Codigo principal de Enriquez.
 
-- `main_code`: generador de reglas, analisis posteriores y generador de db para el visualizador. #TODO: subdivisiones
+- `protein-visualization`: docker y la aplicacion visualizadora, en otro repo.
 
-- `protein-visualization`: docker y la aplicacion visualizadora en si.
-
+- `experiments`: jupyter-notebooks con todos los experimentos de la tesis, en otro repo. 
 
 # Setup
 
@@ -31,9 +30,7 @@
 
 - Generar reglas: `generate_rules.r`. Ejemplo: `./generate_rules.r --family=NEWAnk` (quiza necesite previamente `chmod u+x generate_rules.r`)
 
-- Simplificar output reglas: `simplify_rules_format.py`
-
-- Comparar reglas: `compare_rules.py`
+- Comparacion de reglas: `compare_rules.py`
 
 - Generacion de logos:
   : run_parse_app
@@ -48,8 +45,10 @@ python3 logo_analysis.py -sto_path tesis-jmenriquez-code/out_parse_rules_jonno_N
 python3 logo_analysis.py -sto_path tesis-jmenriquez-code/out_parse_rules_jm_ank -sto GADV LHLA LISH TPLH > output/logos/logo_analysis_jm_ank.txt
 ```
 
-- Generacion de db: `rule_db_generator.py`
+- Generacion de db para visualizador: `rule_db_generator.py`
 
 ```bash
 python3 -m rule_db_generator --protein_path=../db/canonicalFamilyDataset/familyDataset/TPR1/ --rule_file=output/rules/TPR1_len4_ALL_sub_s0.025_c0.9.csv --filename=output/dbs/db_test.db
 ``` 
+
+- Visualizacion de proteínas: ver repo de visualizador.

@@ -1,3 +1,5 @@
+# Prototipo para comparacion de reglas y mrs (de transacciones) entre dos familias
+
 import argparse
 import nltk
 import pathlib

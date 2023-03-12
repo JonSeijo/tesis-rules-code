@@ -1,5 +1,5 @@
 # python3
-# Generate transactions without using MRs (nomrs)
+# Generate transactions without using MRs (KMERAS/nomrs)
 # It uses all substrings of length K instead
 
 import argparse
@@ -13,7 +13,7 @@ import os
 
 from typing import List
 
-from utils import read_db_multiples
+from family_analysis import read_db_multiples
 
 
 PATH_TRANSACTIONS = "output/clean_transactions/"

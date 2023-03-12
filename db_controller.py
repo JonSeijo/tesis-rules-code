@@ -1,3 +1,6 @@
+# Encapsula la conexion a sqlite3 para el rule_db_generator.py
+# TODO: deberia usarse tambien en el rule_stats de enriquez
+
 import sqlite3
 
 class DBController():

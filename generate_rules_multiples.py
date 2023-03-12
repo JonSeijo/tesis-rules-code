@@ -1,4 +1,4 @@
-#generate_rules_multiple
+# Script para hacer ejecuciones multiples de la generacion de reglas
 
 import subprocess
 import shlex

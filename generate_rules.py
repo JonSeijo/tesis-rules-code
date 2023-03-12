@@ -1,3 +1,7 @@
+# Esto es un experimento para usar la libreria de python "apriori" para la generacion de reglas
+# Tiene serios problemas de performance, usar la libreria de R,
+# !!! usar ./generate_rules.r !!!
+
 import argparse
 import csv
 
@@ -121,4 +125,6 @@ if __name__ == '__main__':
     verbosity = args.verbosity
 
     itemsets, rules = generate(family, min_support, min_confidence, max_length, verbosity)
-    save_to_csv(rules, family, min_support, min_confidence)
+
+    # Mejor usa /generate_rules.r!
+    # save_to_csv(rules, family, min_support, min_confidence)

@@ -1,6 +1,9 @@
+# Script para migrar las proteinas .fasta
+# a un unico archivo .fasta con todas las proteinas
+
 import os
 
-from utils import list_valid_families, read_db_multiples
+from family_analysis import list_valid_families, read_db_multiples
 
 from Bio import SeqIO
 

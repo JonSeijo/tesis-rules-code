@@ -1,4 +1,6 @@
-# transactions_analysis.py
+# Utils para armar dataframes de frecuencias y transacciones
+#  usados en los jupyter notebooks
+
 from array import array
 from collections import defaultdict
 from typing import Dict, List, Set
@@ -223,4 +225,3 @@ def tx_frequencies_by_item(txs: List[List[str]]):
 
 if __name__ == "__main__":
     print("Transactions analysis.")
-    print("TODO: Migrate from jupyter")

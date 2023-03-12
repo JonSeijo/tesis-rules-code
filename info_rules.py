@@ -1,3 +1,6 @@
+# Experimentacion para obtener informacion de las reglas
+# TODO: Deberia usar en todo clase rg.Rule preexistente (enriquez)
+
 import ntpath
 import re
 
@@ -5,10 +8,6 @@ from dataclasses import dataclass
 import pandas as pd
 from typing import Sized, Any, Dict, Iterable, List, Tuple, Set, TypeVar
 
-# TODO: Use pre-exisiting classes for rules
-
-# import importlib
-# rg = importlib.import_module("main_code.rulegroup.rulegroup")
 import main_code.rulegroup.rulegroup as rg
 
 
