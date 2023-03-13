@@ -26,7 +26,7 @@
 
 - Generar transacciones: `generate_transactions.py`
 
-- Limpiar transacciones: `clean_transactions.py`
+- Refinar transacciones: `clean_transactions.py`
 
 - Generar reglas: `generate_rules.r`. Ejemplo: `./generate_rules.r --family=NEWAnk` (quiza necesite previamente `chmod u+x generate_rules.r`)
 

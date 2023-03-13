@@ -117,7 +117,7 @@ class GenerateProteinRuleDb(object):
         # if family exists in protein db, only load them
         db_proteins = self.db_controller.get_proteins_of_family(family)
 
-        print(f"Encontre {len(db_proteins)} proteinas de esa familia...")
+        print(f"Found {len(db_proteins)} proteins from this family in the db...")
 
         if len(db_proteins) > 0:
             print("!! Protein family already exists !!")
@@ -136,6 +136,11 @@ class GenerateProteinRuleDb(object):
 
             #Read the fasta proteins from files, insert them and load them.
             for filename_fasta in os.listdir(path_protein):
+
+                proteins_loaded = index - last_protein_id 
+                if proteins_loaded % 1000 == 0:
+                    print(f".. Loaded {proteins_loaded} proteins")
+
                 fname = filename_fasta.strip()
                 fp = FastaParser()
                 fp.readFile(os.path.join(path_protein, fname))
