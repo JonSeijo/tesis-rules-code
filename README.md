@@ -2,13 +2,14 @@
 
 # Estructura
 
-- `maximal-repeats-transactions/`: repositorio para generar transacciones de maximal repeats a partir de una familia de proteinas. Codigo original de pturjanski
+- `maximal-repeats-transactions/`: código de generación transacciones de maximal repeats a partir de una familia de proteinas. Codigo original de pturjanski
 
-- `main_code`: generador de reglas, analisis posteriores y generador de db para el visualizador. Codigo principal de Enriquez.
+- `main_code`: Codigo principal de Enriquez: experimentos, analisis posteriores y clases necesarias para la generacion de db del visualizador. 
 
-- `protein-visualization`: docker y la aplicacion visualizadora, en otro repo.
+- `visualizador`: https://github.com/JonSeijo/tesis-visualizador-reglas-proteinas
 
-- `experiments`: jupyter-notebooks con todos los experimentos de la tesis, en otro repo. 
+- `experimentos`: https://github.com/JonSeijo/tesis-experiments-jupyter 
+
 
 # Setup
 
@@ -21,6 +22,7 @@
 - python3 -m venv venv-tesis 
   : source venv-tesis/bin/activate
   : pip install -r requirements.txt
+
 
 # Run
 
@@ -38,17 +40,18 @@
 
 - Analisis de logos
 ```bash
-python3 logo_analysis.py -sto_path tesis-jmenriquez-code/out_parse_rules_jonno_NEWAnk/ -sto GADV LHLA LISH TPLH > output/logos/logo_analysis_jonno_NEWAnk.txt
+python3 logo_analysis.py -sto_path main_code/out_parse_rules_jonno_NEWAnk/ -sto GADV LHLA LISH TPLH > output/logos/logo_analysis_jonno_NEWAnk.txt
 ```
 
 ```bash
-python3 logo_analysis.py -sto_path tesis-jmenriquez-code/out_parse_rules_jm_ank -sto GADV LHLA LISH TPLH > output/logos/logo_analysis_jm_ank.txt
+python3 logo_analysis.py -sto_path main_code/out_parse_rules_jm_ank -sto GADV LHLA LISH TPLH > output/logos/logo_analysis_jm_ank.txt
 ```
 
 - Generacion de db para visualizador: `rule_db_generator.py`
 
 ```bash
-python3 -m rule_db_generator --protein_path=../db/canonicalFamilyDataset/familyDataset/TPR1/ --rule_file=output/rules/TPR1_len4_ALL_sub_s0.025_c0.9.csv --filename=output/dbs/db_test.db
+python3 -m rule_db_generator --threads=4 --protein_path=../db/canonicalFamilyDataset/familyDataset/TPR1/ --rule_file=output/rules/TPR1_len4_ALL_sub_s0.025_c0.9.csv --filename=output/dbs/db_test.db
 ``` 
 
 - Visualizacion de proteínas: ver repo de visualizador.
+
