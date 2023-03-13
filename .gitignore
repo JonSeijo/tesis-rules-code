@@ -18,8 +18,6 @@ main_code/*.db
 output/
 output (copy)/
 
-# Repos
-maximal-repeats-transactions/
 
 # venv
 venv-tesis/
